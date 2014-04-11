@@ -28,6 +28,8 @@
 <head>
 	<title>Nodepad</title>
 	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
 	<script src="snap.svg-min.js"></script>
 	<script src="nodepad.js"></script>
 	<style>
@@ -36,11 +38,14 @@
 		-webkit-border-radius: 10px;
 		border-radius: 10px;
 		border: solid 2px #ccc;
-		width: 1000px;
+		width: 900px;
 		height: 1000px;
 		float: left;
 		margin-right: 10px;
 		font: 1em source-sans-pro, Source Sans Pro, Helvetica, sans-serif;
+	}
+	#currentcolor {
+		color: black;
 	}
 	</style>
 </head>
@@ -49,10 +54,13 @@
 	<svg id="svg">
 		
 	</svg>
-	<script>var s = Snap("#svg");</script>
+	<script>var s = Snap("#svg");
+			var allgroups = Snap.set();</script>
 	<input type="button" value="new node" onclick="javascript: newnode(s)"><br>
 	<p>SHIFT + CLICK TO DELETE NODES</p>
-	<p>HOVER + Z TO MAKE AN EDGE</p>
+	<p>HOVER + Z TO MAKE AN EDGE, Z AGAIN TO PLACE</p>
+	<p>HIT X TO CANCEL YOUR EDGE</p>
+	<p id="currentcolor">HIT 1-9 TO CYCLE THROUGH COLORS</p>
 </body>
 
 </html>
