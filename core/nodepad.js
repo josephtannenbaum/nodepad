@@ -21,10 +21,8 @@
    
 */
 
-/*
- * TODO: add appropriate colors for algorithms
- * */
-
+var mouseX = 0,
+    mouseY = 0;
 $(document).mousemove(function (e) {
     "use strict";
     mouseX = e.pageX;
@@ -40,24 +38,41 @@ var highlightColor = "orange";
 var edgeColor = "#000";
 var palette = {
     49: "#bada55",
-    50: "#dab855",
+    50: "#C14C44",
     51: "#da55ba",
     52: "#c89dbf",
-    53: "#C14C44",
+    53: "#dab855",
     54: "#55bada"
 };
 var currentcolor = "#bada55";
 var nodeRadius = 36;
 
+/*var cogsvg=null;
+var cogcircle = s.circle(8,8,8);
+cogcircle.attr({fill:"#fff", opacity: 0});
+var newcog;
+Snap.load("http://localhost:8000/cog.svg", function (f) {
+    var cog = f.select("g");
+    cog.attr({fill: "#adbbc6"});
+    cog.transform('s0.25'); 
+    //cogcircle.after(cog);
+    newcog = s.group(cog, cogcircle);
+    newcog.attr({display:"none"});
+    newcog.mouseover(function(){
+        this.attr({fill: "orange"});
+    })
+    newcog.mouseout(function(){
+        this.attr({fill: "#adbbc6"});
+    }) 
+});*/
+
 var nodecount = 1;
 var nodes = [];
 var hoverednode = null;
 var lasthoverednode = null;
-
+var dragging = false;
 var sourcenode = null;
 var hoverededge = null;
-var mouseX = 0,
-    mouseY = 0;
 var edgestretchloop = null;
 
 function clearShapes(allshapes) {
@@ -90,12 +105,18 @@ function removeNode(allnodes, node) {
 
 function cancelEdge() {
     clearInterval(edgestretchloop);
-    hoverededge.remove();
+    if (hoverededge) { hoverededge.remove() };
     hoverededge = null;
     sourcenode = null;
     edgestretchloop = null;
 }
 
+function pullAheadAll(allnodes, obj) {
+    "use strict";
+    allnodes.forEach(function (item) {
+        obj.before(item);
+    }, allnodes);
+}
 function pushBehindAll(allnodes, obj) {
     "use strict";
     allnodes.forEach(function (item) {
@@ -103,12 +124,12 @@ function pushBehindAll(allnodes, obj) {
     }, allnodes);
 }
 
-function makeNewNode(x, y) {
+function makeNewNode(x, y, fill, nohighlight) {
     "use strict";
     var nodeCircle = s.circle(x, y, nodeRadius);
     nodeCircle.attr({
-        fill: currentcolor, // is #bada55 intellectual property?
-        stroke: highlightColor,
+        fill: fill, // is #bada55 intellectual property?
+        stroke: nohighlight ? "#000" : highlightColor,
         strokeWidth: 5
     });
 
@@ -116,7 +137,15 @@ function makeNewNode(x, y) {
     nodeLabel.attr({
         "font-size": "20px"
     });
-
+    
+    /*var cog;
+    cog = newcog.clone();
+    cog.attr({display:"block"});
+    var cogx = x+3;
+    var cogy = y+4;
+    cog.transform("t"+cogx+","+cogy);
+    cog.before(nodeCircle);*/
+    
     var newNode = s.group(nodeCircle, nodeLabel);
     newNode.rays = Snap.set();
     newNode.hover(function () {
@@ -124,7 +153,6 @@ function makeNewNode(x, y) {
             stroke: highlightColor
         });
     },
-
     function () {
         nodeCircle.attr({
             stroke: "#000"
@@ -150,17 +178,26 @@ function makeNewNode(x, y) {
         });
     },
     function () { // highlight while dragging
+        dragging = true;
+        pullAheadAll(allnodes, this);
         cancelEdge();
         nodeCircle.attr({
             stroke: highlightColor
         });
+    },
+    function () {
+        dragging = false;
     });
     newNode.mouseover(function () {
-        hoverednode = this;
+        if(!dragging){
+            hoverednode = this;
+        }
     });
     newNode.mouseout(function () {
-        lasthoverednode = hoverednode;
-        hoverednode = null;
+        if(!dragging){
+            lasthoverednode = hoverednode;
+            hoverednode = null;
+        }
     });
     allnodes.push(newNode);
     allshapes.push(newNode);
@@ -175,7 +212,7 @@ document.onkeydown = function (ev) {
     if (key === 90) {
         // create a new node
         if (!edgestretchloop && !hoverednode) {
-            makeNewNode(mouseX, mouseY);
+            makeNewNode(mouseX, mouseY, currentcolor);
         }
         // start a new edge
         else if (!edgestretchloop && hoverednode) {
@@ -196,7 +233,7 @@ document.onkeydown = function (ev) {
                     "y2": y2 + (mouseY - y2)
                 });
 
-            }, 10);
+            }, 5);
         }
         // place an edge
         else if (edgestretchloop && key === 90 && hoverednode) {

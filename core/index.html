@@ -38,7 +38,7 @@
 		-webkit-border-radius: 10px;
 		border-radius: 10px;
 		border: solid 2px #ccc;
-		width: 900px;
+		width: 1000px;
 		height: 1000px;
 		float: left;
 		margin-right: 10px;
@@ -53,12 +53,15 @@
         padding:5px;
 		background-color: #bada55;
 	}
+    #presets {
+		width: 150px;
+		height: 150px;
+    }
 	</style>
 </head>
 
 <body>
 	<svg id="svg"></svg>
-	<script src="nodepad.js"></script>
 	<div id="currentcolor">
         <p>NODEPAD by <a href="http://tannenbau.me">Joe Tannenbaum</a></p>
         <p>Z: MAKE A NODE</p>
@@ -68,6 +71,9 @@
         <P>C: CLEAR PAD</P>
         <p>HIT 1-6 TO CYCLE THROUGH COLORS</p>
     </div>
+    <svg id="presets"></svg>
+    <script src="nodepad.js"></script>
+    <script src="nodepad_presets.js"></script>
 </body>
 
 </html>
