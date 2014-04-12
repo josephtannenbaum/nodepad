@@ -265,9 +265,16 @@ document.onkeydown = function (ev) {
         }
         return;
     } else if (49 <= key && key <= 54) { // 1-9 press
-        currentcolor = palette[key];
-        document.querySelector("#currentcolor").setAttribute("style", "background-color:" + currentcolor);
-        return;
+        if (hoverednode) {
+            // modifies color of hovered node rather than changing currentcolor
+            hoverednode[0].attr({
+                fill: palette[key]
+            });
+        } else {
+            currentcolor = palette[key];
+            document.querySelector("#currentcolor").setAttribute("style", "background-color:" + currentcolor);
+            return;
+        }
     } else if (67 === key) {
         clearShapes(allshapes);
     } else {
