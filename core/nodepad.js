@@ -264,7 +264,7 @@ document.onkeydown = function (ev) {
             hoverednode = null;
         }
         return;
-    } else if (49 <= key && key <= 54) { // 1-9 press
+    } else if (49 <= key && key <= 54) { // 1-6 press
         if (hoverednode) {
             // modifies color of hovered node rather than changing currentcolor
             hoverednode[0].attr({
