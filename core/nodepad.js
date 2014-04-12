@@ -21,110 +21,191 @@
    
 */
 
-const palette = {49:"#000", 50:"red",51:"purple",52: "blue"};
-var currentcolor = "#000";
+/*
+ * TODO: add appropriate colors for algorithms
+ * TODO: dragging nodes should drag their rays
+ * */
+
+var s = Snap("#svg");
+var allshapes = Snap.set();
+var allnodes = Snap.set();
+var danglingedgepolicy = 1;
+
+var palette = {
+    49: "#bada55",
+    50: "#dab855",
+    51: "#da55ba",
+    52: "#c89dbf",
+    53: "#7555da",
+    54: "#55bada"
+};
+var currentcolor = "#bada55";
 
 var nodecount = 1;
-var nodes=[];
-var hoveredgroup = null;
+var nodes = [];
+var hoverednode = null;
 
-var sourcegroup = null;
-var hoveredline = null;
-var mouseX=0, mouseY=0;
-var linestretchloop=null;
+var sourcenode = null;
+var hoverededge = null;
+var mouseX = 0,
+    mouseY = 0;
+var edgestretchloop = null;
 
-function putbehindall (allgroups, obj) {
-	allgroups.forEach( function(item, i){
-		if (obj.after) obj.after(item);
-	}, allgroups );
+function clearShapes(allshapes) {
+    allshapes.forEach(function (item) {
+        item.remove();
+    }, allshapes);
+    hoverededge = null;
+    sourcenode = null;
+    hoverednode = null;
+    edgestretchloop = null;
+    nodecount = 1;
+    nodes = [];
+    allnodes = Snap.set();
+    allshapes = Snap.set();
 }
 
-function newnode() {
-
-	var bigCircle = s.circle(150, 150, 50);
-	bigCircle.attr({
-	    fill: "#bada55", // is #bada55 intellectual property?
-	    stroke: "#000",
-	    strokeWidth: 5
-	});
-
-	var label = s.text(145, 155, nodecount);
-	label.attr({"font-size":"20px"});
-	
-	var rays = Snap.set();
-	
-	grp = s.group(bigCircle, label);
-	grp.hover(function(){bigCircle.attr({stroke: "orange"});},
-	    function(){bigCircle.attr({stroke: "#000"});}
-	);
-	grp.drag();
-	grp.drag(null,
-	    function(){bigCircle.attr({stroke: "orange"});}
-	);
-	grp.click(function(){
-			if ( window.event.shiftKey ) {
-				this.remove();
-				
-			}
-		}
-	)
-	grp.mouseover(function(){
-			hoveredgroup = this;
-		}
-	);
-	grp.mouseout(
-		function() {
-			hoveredgroup = null;
-		}
-	);
-	allgroups.push(grp);
-	nodecount++;
+function removeNode(allnodes, node) {
+    if (danglingedgepolicy === 1) { // remove all rays with the node
+        node.rays.forEach(function (item) {
+            allshapes.exclude(item);
+            item.remove();
+        });
+    } else if (danglingedgepolicy === 2) { // dangle them? ??
+        
+    }
+    allnodes.exclude(node);
+    allshapes.exclude(node);
+    node.remove();
 }
 
-document.onkeydown = (function (ev) {
-	
-  var key= (event || window.event).keyCode;
-  
-  if (!linestretchloop && key == 90 && hoveredgroup) {
-	sourcegroup = hoveredgroup
-	ln = s.line(hoveredgroup.getBBox().cx, hoveredgroup.getBBox().cy, hoveredgroup.getBBox().cx, hoveredgroup.getBBox().cy);
-  	ln.attr({
-	    stroke: currentcolor,
-	    strokeWidth: 5
-	});
-	
-	hoveredgroup.before(ln);
-	hoveredline = ln;
-	linestretchloop = setInterval(function(){
-	    x2 = ln.getBBox().x2;
-	    y2 = ln.getBBox().y2;
-	    ln.attr({"x2" : x2 + (mouseX - x2) / 2,
-				"y2" : y2 + (mouseY - y2) / 2});
-	    
-	}, 10);
-	
-  } else if (linestretchloop && key == 90 && hoveredgroup) {
-	    cx = hoveredgroup.getBBox().cx;
-	    cy = hoveredgroup.getBBox().cy;
-		hoveredline.attr({"x2" : cx,
-				"y2" : cy});
-		clearInterval(linestretchloop);
-		putbehindall(allgroups, hoveredline);
-		linestretchloop = null;
-		hoveredline = null;
-		sourcegroup = null;
-  } else if (linestretchloop && key == 88) {
-	  clearInterval(linestretchloop);
-	  hoveredline.remove();
-	  hoveredline = null;
-	  sourcegroup = null;
-	  linestretchloop = null;
-  } else if (49 <= key && key <= 57) {
-	  currentcolor = palette[key];
-  }
-});
+function pushBehindAll(allnodes, obj) {
+    "use strict";
+    allnodes.forEach(function (item) {
+        obj.after(item);
+    }, allnodes);
+}
 
-$(document).mousemove(function(e){
-   mouseX = e.pageX;
-   mouseY = e.pageY; 
+function makeNewNode(x, y) {
+    "use strict";
+    var nodeCircle = s.circle(x, y, 40);
+    nodeCircle.attr({
+        fill: currentcolor, // is #bada55 intellectual property?
+        stroke: "#000",
+        strokeWidth: 5
+    });
+
+    var nodeLabel = s.text(x - 5, y + 5, nodecount);
+    nodeLabel.attr({
+        "font-size": "20px"
+    });
+
+    var newNode = s.group(nodeCircle, nodeLabel);
+    newNode.rays = Snap.set();
+    newNode.hover(function () {
+        nodeCircle.attr({
+            stroke: "orange"
+        });
+    },
+
+    function () {
+        nodeCircle.attr({
+            stroke: "#000"
+        });
+    });
+    newNode.drag();
+    newNode.drag(null,
+
+    function () {
+        nodeCircle.attr({
+            stroke: "orange"
+        });
+    });
+    newNode.mouseover(function () {
+        hoverednode = this;
+    });
+    newNode.mouseout(function () {
+        hoverednode = null;
+    });
+    allnodes.push(newNode);
+    allshapes.push(newNode);
+    nodecount += 1;
+}
+
+document.onkeydown = function (ev) {
+    "use strict";
+    var key = (ev || window.event).keyCode;
+
+    // Z press
+    if (key === 90) {
+        // create a new node
+        if (!edgestretchloop && !hoverednode) {
+            makeNewNode(mouseX, mouseY);
+        }
+        // start a new edge
+        else if (!edgestretchloop && hoverednode) {
+            sourcenode = hoverednode;
+            var ln = s.line(hoverednode.getBBox().cx, hoverednode.getBBox().cy, hoverednode.getBBox().cx, hoverednode.getBBox().cy);
+            ln.attr({
+                stroke: "#000",
+                strokeWidth: 5
+            });
+            allshapes.push(ln);
+            hoverededge = ln;
+            pushBehindAll(allnodes, hoverededge)
+            edgestretchloop = setInterval(function () {
+                var x2 = ln.getBBox().x2;
+                var y2 = ln.getBBox().y2;
+                ln.attr({
+                    "x2": x2 + (mouseX - x2),
+                    "y2": y2 + (mouseY - y2)
+                });
+
+            }, 10);
+        }
+        // place an edge
+        else if (edgestretchloop && key === 90 && hoverednode) {
+            var cx = hoverednode.getBBox().cx;
+            var cy = hoverednode.getBBox().cy;
+            hoverededge.attr({
+                "x2": cx,
+                    "y2": cy
+            });
+            sourcenode.rays.push(hoverededge);
+            hoverednode.rays.push(hoverededge);
+            clearInterval(edgestretchloop);
+            pushBehindAll(allnodes, hoverededge);
+            edgestretchloop = null;
+            hoverededge = null;
+            sourcenode = null;
+        }
+        return;
+    } else if (key === 88) { // X press
+        if (edgestretchloop) { // cancel edge
+            clearInterval(edgestretchloop);
+            hoverededge.remove();
+            hoverededge = null;
+            sourcenode = null;
+            edgestretchloop = null;
+            return;
+        } else if (hoverednode) { // remove node
+            removeNode(allnodes, hoverednode);
+            hoverednode = null;
+        }
+        return;
+    } else if (49 <= key && key <= 54) { // 1-9 press
+        currentcolor = palette[key];
+        $("#currentcolor")[0].setAttribute("style", "background-color:" + currentcolor);
+        return;
+    } else if (67 === key) {
+        clearShapes(allshapes);
+    } else {
+        //alert(key);
+    }
+};
+
+$(document).mousemove(function (e) {
+    "use strict";
+    mouseX = e.pageX;
+    mouseY = e.pageY;
 });
