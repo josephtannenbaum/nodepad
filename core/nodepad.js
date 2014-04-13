@@ -273,8 +273,8 @@ document.onkeydown = function (ev) {
         } else {
             currentcolor = palette[key];
             document.querySelector("#currentcolor").setAttribute("style", "background-color:" + currentcolor);
-            return;
         }
+        return;
     } else if (67 === key) {
         clearShapes(allshapes);
     } else {
