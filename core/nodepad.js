@@ -54,11 +54,14 @@ function Node(nodegroup) {
     this.edges = Snap.set();
     this.outedges = Snap.set();
     this.inedges = Snap.set();
-    this.remove = function() {
-        this.group.remove();
-    }
     this.fill = function(fill) {
         this.group.select("circle").attr({fill: fill});
+    }
+    this.setLabel = function(label) {
+        this.group.select("text").attr({text: label});
+    }
+    this.remove = function() {
+        this.group.remove();
     }
     this.pushEdge = function(edge, am_src) {
         this.edges.push(edge);
@@ -112,6 +115,7 @@ function Nodepad(selector) {
         });
         this.draggingline = line;
         this.sendToBack(line);
+        this.sendToFront(this.sourcenode.group);
         this.edgestretchloop = setInterval(function () {
             var x2 = line.getBBox().x2;
             var y2 = line.getBBox().y2;
@@ -123,8 +127,8 @@ function Nodepad(selector) {
         }, 5);
     }
     this.cancelEdge = function() {
-        clearInterval(this.edgestretchloop);
-        if (this.draggingline) { this.draggingline.remove() };
+        if (this.edgestretchloop) { clearInterval(this.edgestretchloop); }
+        if (this.draggingline) { this.draggingline.remove(); }
         this.draggingline = null;
         this.sourcenode = null;
         this.edgestretchloop = null;
@@ -240,11 +244,13 @@ function Nodepad(selector) {
         this.currentfill = fill;
     }
     this.clear = function() {
+        this.cancelEdge();
         this.nodes.forEach(function(node) {
             this.removeNode(node, true);
         }, this);
         this.nodes.clear();
         this.edges.clear();
+        this.nodecount = 1;
     }
 }
 

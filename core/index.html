@@ -28,7 +28,10 @@
 <head>
 	<title>Nodepad</title>
 	<meta http-equiv="content-type" content="text/html;charset=UTF-8">
-	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<meta property="og:title" content="Nodepad - a graph/tree sketchpad" />
+    <meta property="og:description" content="pretty much Joe Tannenbaum's first webapp" />
+    <meta property="og:image" content="http://tannenbau.me/nodepad/preview.png" />
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 	<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
 	<script src="snap.svg-min.js"></script>
 	<style>
@@ -52,6 +55,8 @@
 		border: solid 1px #000;
         padding:5px;
 		background-color: #bada55;
+        color: #181919;
+        font: 14px "Source Sans", helvetica, arial, sans-serif;
 	}
     #presets {
 		width: 150px;
@@ -64,16 +69,17 @@
 	<svg id="svg"></svg>
 	<div id="currentcolor">
         <p>NODEPAD by <a href="http://tannenbau.me">Joe Tannenbaum</a> (<a href="https://github.com/josephtannenbaum/nodepad">source on GitHub</a>)</p>
-        <p>Z: MAKE A NODE</p>
-        <p>HOVER+X: DELETE A NODE</p>
-        <p>HOVER+Z: START EDGE, Z AGAIN TO PLACE</p>
-        <p>HIT X TO CANCEL YOUR EDGE</p>
-        <P>C: CLEAR PAD</P>
-        <p>HIT 1-6 TO CYCLE THROUGH COLORS</p>
-        <p>HOVER + [1-6] TO CHANGE A NODE'S COLOR</p>
+        <p>Z: Make a node</p>
+        <p>HOVER+X: Delete a node</p>
+        <p>HOVER+Z: Start edge, Z again to place edge</p>
+        <p>Hit X to cancel your edge</p>
+        <P>C: Clear nodepad</P>
+        <p>Hit 1-6 to cycle through colors</p>
+        <p>HOVER + [1-6] to change a node's</p>
     </div>
     <svg id="presets"></svg>
     <script src="nodepad.js"></script>
+    <script src="algo_dfs.js"></script>
     <script src="nodepad_presets.js"></script>
     <script>
         var np = new Nodepad("#svg");

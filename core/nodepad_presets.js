@@ -21,17 +21,30 @@
    
 */
 
+function gridPlaceNode(x, y, label, fill) {
+    return np.placeNode(50+x*100, 50+y*100, label, fill, true);
+}
+
 function makebinarytree() {
     np.clear();
-    n1 = np.placeNode(425,200, "1", false, true);
-    n2 = np.placeNode(500,100, "2", false, true);
-    n3 = np.placeNode(575,200, "3", false, true);
-    np.drawEdge(n2, n1);
-    np.drawEdge(n2, n3);
+    nD = gridPlaceNode(4,0, "D");
+    nB = gridPlaceNode(2,1, "B");
+    nF = gridPlaceNode(6,1, "F");
+    nA = gridPlaceNode(1,2, "A");
+    nC = gridPlaceNode(3,2, "C");
+    nE = gridPlaceNode(5,2, "E");
+    nG = gridPlaceNode(7,2, "G");
+    np.drawEdge(nD, nB);
+    np.drawEdge(nD, nF);
+    np.drawEdge(nB, nA);
+    np.drawEdge(nB, nC);
+    np.drawEdge(nF, nE);
+    np.drawEdge(nF, nG);
+    
 }
 
 var p = Snap("#presets");
-var pre_square =  p.rect(2, 10, 50, 50);
+var pre_square =  p.rect(2, 10, 60, 60);
 pre_square.attr({ fill: "#fff", stroke: "#000", strokeWidth: 1});
 var ps_cx = pre_square.getBBox().cx;
 var ps_cy = pre_square.getBBox().cy;
@@ -54,8 +67,40 @@ binary_panel2.after(binary_panel);
 binary_panel2.click(makebinarytree);
 
 function present_presets() {
-    binary_panel.animate({transform: "t0,60",},80);
-    binary_panel2.animate({transform: "t0,120",},90);
+    binary_panel.animate({transform: "t0,70",},80);
+    binary_panel.click(function() {
+        this.select("rect").attr({stroke: "#bada55"});
+        this.select("rect").animate({stroke: "#000"}, 800);
+    }, binary_panel);
+    binary_panel2.animate({transform: "t0,140",},90);
+    binary_panel2.click(function() {
+        this.select("rect").attr({stroke: "#bada55"});
+        this.select("rect").animate({stroke: "#000"}, 800);
+    }, binary_panel2);
 }
 pre_panel.mouseover(present_presets);
+
+var algo_square =  p.rect(72, 10, 60, 60);
+algo_square.attr({ fill: "#fff", stroke: "#000", strokeWidth: 1});
+var algo_label = p.text(algo_square.getBBox().cx - 24, algo_square.getBBox().cy + 3, "algorithms");
+algo_label.attr({
+    "font-size": "11px"
+});
+var algo_panel = p.group(algo_square, algo_label);
+var dfs_panel = algo_panel.clone();
+dfs_panel.attr({display:"block"});
+dfs_panel.select("text").attr({text:"DFS", "font-size": "12px"});
+dfs_panel.after(algo_panel);
+dfs_panel.click(algo_dfs);
+
+function present_algos() {
+    dfs_panel.animate({transform: "t0,70",},80);
+    dfs_panel.click(function() {
+        this.select("rect").attr({stroke: "#bada55"});
+        this.select("rect").animate({stroke: "#000"}, 800);
+    }, dfs_panel);
+}
+algo_panel.mouseover(present_algos);
+
+
 
