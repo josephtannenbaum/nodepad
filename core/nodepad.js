@@ -90,6 +90,19 @@ function Nodepad(selector) {
             shape.before(node.group);
         }, this.nodes); 
     }
+    this.drawEdge = function(srcnode, dstnode) {
+        var line = this.s.line(srcnode.x, srcnode.y, dstnode.x, dstnode.y);
+        line.attr({
+            stroke: defaultEdgeColor,
+            strokeWidth: 5
+        });
+        this.sendToBack(line);
+        var newedge = new Edge(line, srcnode, dstnode);
+        srcnode.pushEdge(newedge, true);
+        dstnode.pushEdge(newedge, false);
+        this.edges.push(newedge);
+        return newedge;
+    }
     this.startEdge = function() {
         this.sourcenode = this.hoverednode;
         var line = this.s.line(this.hoverednode.x, this.hoverednode.y, this.hoverednode.x, this.hoverednode.y);
@@ -131,16 +144,17 @@ function Nodepad(selector) {
         this.edgestretchloop = null;
         this.draggingline = null;
         this.sourcenode = null;
+        return newedge;
     }
     this.removeEdge = function(edge) {
         this.edges.exclude(edge);
         edge.remove();
     }
-    this.placeNode = function(x, y, label, nohighlight) {
+    this.placeNode = function(x, y, label, fill, nohighlight) {
         /* start with a group... */
         var nodecircle = this.s.circle(x, y, defaultNodeRadius);
         nodecircle.attr({
-            fill: this.currentfill,
+            fill: fill || this.currentfill,
             stroke: nohighlight ? "#000" : defaultHighlightColor,
             strokeWidth: 5
         });
@@ -205,7 +219,7 @@ function Nodepad(selector) {
                 np.hoverednode = null;
             }
         });
-        
+        return newnode;
     }
     this.removeNode = function(node, keep_in_nodeset) {
         node.edges.forEach(function(edge) {

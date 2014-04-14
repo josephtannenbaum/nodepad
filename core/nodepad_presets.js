@@ -22,10 +22,12 @@
 */
 
 function makebinarytree() {
-    clearShapes(allshapes);
-    makeNewNode(125,200,"#bada55", true);
-    makeNewNode(200,100,"#bada55", true);
-    makeNewNode(275,200,"#bada55", true);
+    np.clear();
+    n1 = np.placeNode(425,200, "1", false, true);
+    n2 = np.placeNode(500,100, "2", false, true);
+    n3 = np.placeNode(575,200, "3", false, true);
+    np.drawEdge(n2, n1);
+    np.drawEdge(n2, n3);
 }
 
 var p = Snap("#presets");
@@ -44,8 +46,16 @@ binary_panel.select("text").attr({text:"bin tree"});
 binary_panel.after(pre_panel);
 binary_panel.click(makebinarytree);
 
+var binary_panel2 = pre_panel.clone();
+binary_panel2.attr({display:"block"});
+binary_panel2.select("text").attr({text:"bin tree"});
+binary_panel2.after(pre_panel);
+binary_panel2.after(binary_panel);
+binary_panel2.click(makebinarytree);
+
 function present_presets() {
-    binary_panel.animate({transform: "t60,0",},70);
+    binary_panel.animate({transform: "t0,60",},80);
+    binary_panel2.animate({transform: "t0,120",},90);
 }
 pre_panel.mouseover(present_presets);
 
