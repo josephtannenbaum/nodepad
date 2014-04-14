@@ -125,6 +125,15 @@ flood_panel.click(flood_setup);
 function present_algos() {
     flood_panel.animate({transform: "t0,70",},80);
     flood_panel.click(function() {
+            notif({
+          type: "success",
+          msg: "Click on a node to start the algorithm...",
+          position: "right",
+          bgcolor: "#bada55",
+          fade: true,
+          width: 350,
+          timeout:2000
+        });
         this.select("rect").attr({stroke: "#bada55"});
         this.select("rect").animate({stroke: "#000"}, 800);
     }, flood_panel);
