@@ -49,6 +49,7 @@ var defaultNodeRadius = 36;
 
 function Node(nodegroup) {
     this.group = nodegroup;
+    this.label = nodegroup.select("text").text;
     this.x = nodegroup.getBBox().cx;
     this.y = nodegroup.getBBox().cy;
     this.edges = Snap.set();
@@ -59,6 +60,50 @@ function Node(nodegroup) {
     }
     this.setLabel = function(label) {
         this.group.select("text").attr({text: label});
+        this.label = label;
+    }
+    this.move = function(newx, newy, animation_time) {
+        if(animation_time) {
+            var thisnode = this;
+            var setterX = function(n) {
+                thisnode.edges.forEach(function (edge) {
+                    if (edge.src == thisnode) {
+                        edge.line.attr({x1: n});
+                    } else {
+                        edge.line.attr({x2: n});
+                    }
+                }, thisnode);
+            };
+            var setterY = function(n) {
+                thisnode.edges.forEach(function (edge) {
+                    if (edge.src == thisnode) {
+                        edge.line.attr({y1: n});
+                    } else {
+                        edge.line.attr({y2: n});
+                    }
+                }, thisnode);
+            }
+            var dx = newx - this.x;
+            var dy = newy - this.y;
+            this.group.animate({transform:"t"+dx+","+dy}, animation_time);
+            Snap.animate(this.x, newx, setterX, animation_time);
+            Snap.animate(this.y, newy, setterY, animation_time);
+            this.x = newx;
+            this.y = newy;
+        } else {
+            var dx = newx - this.x;
+            var dy = newy - this.y;
+            this.group.animate({transform:"t"+dx+","+dy}, 0);
+            this.x = newx;
+            this.y = newy;
+            this.edges.forEach(function (edge) {
+                if (edge.src == this) {
+                    edge.line.attr({x1: this.x, y1: this.y});
+                } else {
+                    edge.line.attr({x2: this.x, y2: this.y});
+                }
+            }, this);
+        }
     }
     this.remove = function() {
         this.group.remove();
@@ -168,6 +213,7 @@ function Nodepad(selector) {
         
         /* node set stuff */
         var newnode = new Node(nodegroup);
+        newnode.label = this.nodecount;
         this.nodes.push(newnode);
         this.nodecount += 1;
         this.lasthoverednode = this.hoverednode;
