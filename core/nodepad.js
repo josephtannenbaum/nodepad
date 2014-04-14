@@ -21,6 +21,11 @@
    
 */
 
+function assert(condition, message) {
+    if (!condition) {
+        throw message || "Assertion failed";
+    }
+}
 var mouseX = 0,
     mouseY = 0;
 $(document).mousemove(function (e) {
@@ -29,13 +34,8 @@ $(document).mousemove(function (e) {
     mouseY = e.pageY;
 });
 
-var s = Snap("#svg");
-var allshapes = Snap.set();
-var allnodes = Snap.set();
-var danglingedgepolicy = 1;
-
-var highlightColor = "orange";
-var edgeColor = "#000";
+var defaultHighlightColor = "orange";
+var defaultEdgeColor = "#000";
 var palette = {
     49: "#bada55",
     50: "#C14C44",
@@ -44,240 +44,222 @@ var palette = {
     53: "#dab855",
     54: "#55bada"
 };
-var currentcolor = "#bada55";
-var nodeRadius = 36;
+var defaultCurrentColor = palette[49];
+var defaultNodeRadius = 36;
 
-/*var cogsvg=null;
-var cogcircle = s.circle(8,8,8);
-cogcircle.attr({fill:"#fff", opacity: 0});
-var newcog;
-Snap.load("http://localhost:8000/cog.svg", function (f) {
-    var cog = f.select("g");
-    cog.attr({fill: "#adbbc6"});
-    cog.transform('s0.25'); 
-    //cogcircle.after(cog);
-    newcog = s.group(cog, cogcircle);
-    newcog.attr({display:"none"});
-    newcog.mouseover(function(){
-        this.attr({fill: "orange"});
-    })
-    newcog.mouseout(function(){
-        this.attr({fill: "#adbbc6"});
-    }) 
-});*/
-
-var nodecount = 1;
-var nodes = [];
-var hoverednode = null;
-var lasthoverednode = null;
-var dragging = false;
-var sourcenode = null;
-var hoverededge = null;
-var edgestretchloop = null;
-
-function clearShapes(allshapes) {
-    allshapes.forEach(function (item) {
-        item.remove();
-    }, allshapes);
-    hoverededge = null;
-    sourcenode = null;
-    hoverednode = null;
-    edgestretchloop = null;
-    nodecount = 1;
-    nodes = [];
-    allnodes = Snap.set();
-    allshapes = Snap.set();
-}
-
-function removeNode(allnodes, node) {
-    if (danglingedgepolicy === 1) { // remove all rays with the node
-        node.rays.forEach(function (item) {
-            allshapes.exclude(item);
-            item.remove();
-        });
-    } else if (danglingedgepolicy === 2) { // dangle them? ??
-        
+function Node(nodegroup) {
+    this.group = nodegroup;
+    this.x = nodegroup.getBBox().cx;
+    this.y = nodegroup.getBBox().cy;
+    this.edges = Snap.set();
+    this.outedges = Snap.set();
+    this.inedges = Snap.set();
+    this.remove = function() {
+        this.group.remove();
     }
-    allnodes.exclude(node);
-    allshapes.exclude(node);
-    node.remove();
+    this.fill = function(fill) {
+        this.group.select("circle").attr({fill: fill});
+    }
+    this.pushEdge = function(edge, am_src) {
+        this.edges.push(edge);
+        (am_src ? this.outedges : this.inedges).push(edge);
+    }
 }
-
-function cancelEdge() {
-    clearInterval(edgestretchloop);
-    if (hoverededge) { hoverededge.remove() };
-    hoverededge = null;
-    sourcenode = null;
-    edgestretchloop = null;
+function Edge(line, srcnode, dstnode) {
+    this.line = line;
+    this.src = srcnode;
+    this.dst = dstnode;
+    this.remove = function() {
+        this.line.remove();
+    }
 }
-
-function pullAheadAll(allnodes, obj) {
-    "use strict";
-    allnodes.forEach(function (item) {
-        obj.before(item);
-    }, allnodes);
-}
-function pushBehindAll(allnodes, obj) {
-    "use strict";
-    allnodes.forEach(function (item) {
-        obj.after(item);
-    }, allnodes);
-}
-
-function makeNewNode(x, y, fill, nohighlight) {
-    "use strict";
-    var nodeCircle = s.circle(x, y, nodeRadius);
-    nodeCircle.attr({
-        fill: fill, // is #bada55 intellectual property?
-        stroke: nohighlight ? "#000" : highlightColor,
-        strokeWidth: 5
-    });
-
-    var nodeLabel = s.text(x - 5, y + 5, nodecount);
-    nodeLabel.attr({
-        "font-size": "20px"
-    });
+function Nodepad(selector) {
+    this.s = Snap(selector);
+    this.nodes = Snap.set();
+    this.edges = Snap.set();
+    this.currentfill = defaultCurrentColor;
+    this.nodecount = 1;
     
-    /*var cog;
-    cog = newcog.clone();
-    cog.attr({display:"block"});
-    var cogx = x+3;
-    var cogy = y+4;
-    cog.transform("t"+cogx+","+cogy);
-    cog.before(nodeCircle);*/
-    
-    var newNode = s.group(nodeCircle, nodeLabel);
-    newNode.rays = Snap.set();
-    newNode.hover(function () {
-        nodeCircle.attr({
-            stroke: highlightColor
+    this.sendToBack = function(shape) {
+        this.nodes.forEach(function (node) {
+            shape.after(node.group);
+        }, this.nodes); 
+    }
+    this.sendToFront = function(shape) {
+        this.nodes.forEach(function (node) {
+            shape.before(node.group);
+        }, this.nodes); 
+    }
+    this.startEdge = function() {
+        this.sourcenode = this.hoverednode;
+        var line = this.s.line(this.hoverednode.x, this.hoverednode.y, this.hoverednode.x, this.hoverednode.y);
+        line.attr({
+            stroke: defaultEdgeColor,
+            strokeWidth: 5
         });
-    },
-    function () {
-        nodeCircle.attr({
-            stroke: "#000"
+        this.draggingline = line;
+        this.sendToBack(line);
+        this.edgestretchloop = setInterval(function () {
+            var x2 = line.getBBox().x2;
+            var y2 = line.getBBox().y2;
+            line.attr({
+                "x2": x2 + (mouseX - x2),
+                "y2": y2 + (mouseY - y2)
+            });
+
+        }, 5);
+    }
+    this.cancelEdge = function() {
+        clearInterval(this.edgestretchloop);
+        if (this.draggingline) { this.draggingline.remove() };
+        this.draggingline = null;
+        this.sourcenode = null;
+        this.edgestretchloop = null;
+    }
+    this.placeEdge = function(srcnode, dstnode) {
+        if(srcnode == dstnode) {return;}
+        this.draggingline.attr({
+            "x2": dstnode.x,
+            "y2": dstnode.y
         });
-    });
-    newNode.drag();
-    newNode.drag(function(e){ // node rays drag with the node
-        var draggednode = hoverednode || lasthoverednode;
-        var cx = draggednode.getBBox().cx;
-        var cy = draggednode.getBBox().cy;
-        draggednode.rays.forEach(function(item){
-            if (item.src == draggednode) {
-                item.attr({
-                    x1: cx,
-                    y1: cy
+        var newedge = new Edge(this.draggingline, srcnode, dstnode);
+        srcnode.pushEdge(newedge, true);
+        dstnode.pushEdge(newedge, false);
+        this.edges.push(newedge);
+        clearInterval(this.edgestretchloop);
+        this.sendToBack(this.draggingline);
+        this.edgestretchloop = null;
+        this.draggingline = null;
+        this.sourcenode = null;
+    }
+    this.removeEdge = function(edge) {
+        this.edges.exclude(edge);
+        edge.remove();
+    }
+    this.placeNode = function(x, y, label, nohighlight) {
+        /* start with a group... */
+        var nodecircle = this.s.circle(x, y, defaultNodeRadius);
+        nodecircle.attr({
+            fill: this.currentfill,
+            stroke: nohighlight ? "#000" : defaultHighlightColor,
+            strokeWidth: 5
+        });
+        var nodelabel = this.s.text(x - 5, y + 5, label || this.nodecount);
+        nodelabel.attr({"font-size": "20px"});
+        var nodegroup = this.s.group(nodecircle, nodelabel);
+        
+        /* node set stuff */
+        var newnode = new Node(nodegroup);
+        this.nodes.push(newnode);
+        this.nodecount += 1;
+        this.lasthoverednode = this.hoverednode;
+        this.hoverednode = newnode;
+        
+        /* node-hovering behavior */
+        nodegroup.hover(function () {
+            if (!np.draggingnode) {
+                nodegroup.select("circle").attr({
+                    stroke: defaultHighlightColor
                 });
-            } else {
-                item.attr({
-                    x2: cx,
-                    y2: cy
+            }
+        },
+        function () {
+            if (!np.draggingnode) {
+                nodegroup.select("circle").attr({
+                    stroke: "#000"
                 });
             }
         });
-    },
-    function () { // highlight while dragging
-        dragging = true;
-        pullAheadAll(allnodes, this);
-        cancelEdge();
-        nodeCircle.attr({
-            stroke: highlightColor
+        
+        /* node-dragging behavior */
+        nodegroup.drag();
+        nodegroup.drag(function(dx, dy, x, y, e){ // onmove
+            newnode.x = newnode.group.getBBox().cx;
+            newnode.y = newnode.group.getBBox().cy;
+            newnode.edges.forEach(function (edge) {
+                if (edge.src == newnode) {
+                    edge.line.attr({x1: newnode.x, y1: newnode.y});
+                } else {
+                    edge.line.attr({x2: newnode.x, y2: newnode.y});
+                }
+            }, newnode.edges);
+        },
+        function (x, y, e) { // onstart
+            np.draggingnode = np.hoverednode || np.lasthoverednode;
+            np.sendToFront(nodegroup);
+            nodegroup.select("circle").attr({stroke: defaultHighlightColor});
+        },
+        function (e) { // onend 
+            np.draggingnode = null;
         });
-    },
-    function () {
-        dragging = false;
-    });
-    newNode.mouseover(function () {
-        if(!dragging){
-            hoverednode = this;
+        
+        /* hovering behavior */
+        nodegroup.mouseover(function () {
+            if(!np.draggingnode){
+                np.hoverednode = newnode;
+            }
+        });
+        nodegroup.mouseout(function () {
+            if(!np.draggingnode){
+                np.lasthoverednode = np.hoverednode;
+                np.hoverednode = null;
+            }
+        });
+        
+    }
+    this.removeNode = function(node, keep_in_nodeset) {
+        node.edges.forEach(function(edge) {
+            this.removeEdge(edge);
+        }, this);
+        node.remove();
+        if (!keep_in_nodeset) {
+            this.nodes.exclude(node);
         }
-    });
-    newNode.mouseout(function () {
-        if(!dragging){
-            lasthoverednode = hoverednode;
-            hoverednode = null;
-        }
-    });
-    allnodes.push(newNode);
-    allshapes.push(newNode);
-    nodecount += 1;
+        this.hoverednode = null;
+    }
+    this.fillNode = function(fill, node) {
+        node = node || this.hoverednode;
+        fill = fill || this.currentfill
+        node.fill(fill);
+    }
+    this.setCurrentColor = function(fill) {
+        this.currentfill = fill;
+    }
+    this.clear = function() {
+        this.nodes.forEach(function(node) {
+            this.removeNode(node, true);
+        }, this);
+        this.nodes.clear();
+        this.edges.clear();
+    }
 }
 
 document.onkeydown = function (ev) {
     "use strict";
+    assert(np, "Error: np var not found!");
     var key = (ev || window.event).keyCode;
-
-    // Z press
-    if (key === 90) {
-        // create a new node
-        if (!edgestretchloop && !hoverednode) {
-            makeNewNode(mouseX, mouseY, currentcolor);
+    if (key === 90) { // Z press
+        if (!np.edgestretchloop && !np.hoverednode) {
+            np.placeNode(mouseX, mouseY);
+        } else if (!np.edgestretchloop && np.hoverednode) {
+            np.startEdge();
+        } else if (np.edgestretchloop && np.hoverednode) {
+            np.placeEdge(np.sourcenode, np.hoverednode);
         }
-        // start a new edge
-        else if (!edgestretchloop && hoverednode) {
-            sourcenode = hoverednode;
-            var ln = s.line(hoverednode.getBBox().cx, hoverednode.getBBox().cy, hoverednode.getBBox().cx, hoverednode.getBBox().cy);
-            ln.attr({
-                stroke: edgeColor,
-                strokeWidth: 5
-            });
-            allshapes.push(ln);
-            hoverededge = ln;
-            pushBehindAll(allnodes, hoverededge)
-            edgestretchloop = setInterval(function () {
-                var x2 = ln.getBBox().x2;
-                var y2 = ln.getBBox().y2;
-                ln.attr({
-                    "x2": x2 + (mouseX - x2),
-                    "y2": y2 + (mouseY - y2)
-                });
-
-            }, 5);
-        }
-        // place an edge
-        else if (edgestretchloop && key === 90 && hoverednode) {
-            if (hoverednode == sourcenode) { return; }
-            var cx = hoverednode.getBBox().cx;
-            var cy = hoverednode.getBBox().cy;
-            hoverededge.attr({
-                "x2": cx,
-                    "y2": cy
-            });
-            hoverededge.src = sourcenode;
-            hoverededge.dst = hoverednode;
-            sourcenode.rays.push(hoverededge);
-            hoverednode.rays.push(hoverededge);
-            clearInterval(edgestretchloop);
-            pushBehindAll(allnodes, hoverededge);
-            edgestretchloop = null;
-            hoverededge = null;
-            sourcenode = null;
-        }
-        return;
     } else if (key === 88) { // X press
-        if (edgestretchloop) { // cancel edge
-            cancelEdge();
-            return;
-        } else if (hoverednode) { // remove node
-            removeNode(allnodes, hoverednode);
-            hoverednode = null;
+        if (np.edgestretchloop) {
+            np.cancelEdge();
+        } else if (np.hoverednode) {
+            np.removeNode(np.hoverednode);
         }
-        return;
     } else if (49 <= key && key <= 54) { // 1-6 press
-        if (hoverednode) {
-            // modifies color of hovered node rather than changing currentcolor
-            hoverednode[0].attr({
-                fill: palette[key]
-            });
+        if (np.hoverednode) {
+            np.fillNode(palette[key]);
         } else {
-            currentcolor = palette[key];
-            document.querySelector("#currentcolor").setAttribute("style", "background-color:" + currentcolor);
-            return;
+            np.setCurrentColor(palette[key]);
+            document.querySelector("#currentcolor").setAttribute("style", "background-color:" + palette[key]);
         }
-    } else if (67 === key) {
-        clearShapes(allshapes);
-    } else {
-        //alert(key);
+    } else if (key === 67) { // C press
+        np.clear();
     }
-};
+}
