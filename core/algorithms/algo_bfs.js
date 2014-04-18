@@ -1,5 +1,5 @@
 /*
-   algo_flood.js
+   algo_bfs.js
    
    Copyright 2014 Joe Tannenbaum <joseph.i.tannenbaum@gmail.com>
    
@@ -21,7 +21,7 @@
    
 */
 
-function algo_flood_childnodes(n) {
+function algo_bfs_childnodes(n) {
     var ret = [];
     n.edges.forEach(function(e) {
         var c = (e.dst != n) ? e.dst : e.src;
@@ -33,60 +33,59 @@ function algo_flood_childnodes(n) {
     return ret;
 }
  
-function algo_flood_animate(flat_nodes) {
-    var max_level = flat_nodes.pop();
-    var algo_flood_level = 0;
+function algo_bfs_animate(flat_nodes) {
     flat_nodes.forEach(function(n){
         n.setLabel("?");
         n.fill("#ffffff");
     }, this);
-    algo_flood_interval = setInterval(function() {
-        if(algo_flood_level > max_level) {
-            clearInterval(algo_flood_interval);
-            algo_flood_interval = null;
+    var algo_bfs_n = 0;
+    var algo_bfs_label = 1;
+    algo_bfs_interval = setInterval(function() {
+        if (!flat_nodes[algo_bfs_n]) {
+            clearInterval(algo_bfs_interval);
+            algo_bfs_interval = null;
             return;
         }
-        flat_nodes.forEach(function(n){
-            if(n.algo_color == algo_flood_level) {
-                n.fill("#55b9da");
-                n.setLabel(algo_flood_level+1);
-            }
-        });
-        algo_flood_level+=1; 
+        var t = flat_nodes[algo_bfs_n];
+        if(t.algo_color == 'b') {
+            t.fill("#CCCCCC");
+            t.algo_color = 'd';
+        } else {
+            t.fill("#FF3300");
+            t.setLabel(algo_bfs_label);
+            algo_bfs_label += 1;
+        }
+        algo_bfs_n+=1;
     }, 1200);
 }
 
-function algo_flood(n) {
+function algo_bfs(n) {
     var flat_nodes = [];
-    var max_level = 0;
     var queue=[];
-    n.algo_color = 0; // gray
+    n.algo_color = 'g'; // gray
     queue.push(n);
     flat_nodes.push(n);
-    var level=1;
     while (queue.length) {
         var t = queue.shift();
-        algo_flood_childnodes(t).forEach(function(u){
+        flat_nodes.push(t);
+        t.algo_color = 'b';
+        algo_bfs_childnodes(t).forEach(function(u){
             flat_nodes.push(u);
-            u.algo_color = t.algo_color+1; 
-            if(u.algo_color+1 > max_level) {
-                max_level = u.algo_color+1;
-            }
+            u.algo_color = 'g'; 
             queue.push(u);
         });
     }
-    flat_nodes.push(max_level);
     return flat_nodes;
 }
 
-function algo_flood_setup() {
+function algo_bfs_setup() {
     np.nodes.forEach(function(n) {
        n.algo_color = 'w'; // white
        n.group.click(function(){
-           if(algo_armed !== flood_panel) {return;}
+           if(algo_armed !== bfs_panel) {return;}
            unclickAllNodes();
-           algo_flood_animate(algo_flood(n));
-           algo_armed.select("rect").attr({stroke: "#000"});   
+           algo_bfs_animate(algo_bfs(n));
+           algo_armed.select("rect").attr({stroke: "#000"});
            algo_armed=null; 
        });
     }, np.nodes);

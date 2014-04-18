@@ -21,6 +21,16 @@
    
 */
 
+$.jGrowl.defaults.closer = false;
+$.jGrowl.defaults.closeTemplate = false;
+function nodepad_notif(msg) {
+    $.jGrowl(msg, {
+        theme: 'bad',
+        closer: false,
+        life: 2000
+        });
+}
+
 function assert(condition, message) {
     if (!condition) {
         throw message || "Assertion failed";
@@ -46,6 +56,8 @@ var palette = {
 };
 var defaultCurrentColor = palette[49];
 var defaultNodeRadius = 36;
+var defaultEdgeStrokeWidth = 5;
+var defaultNodeStrokeWidth = 4;
 
 function Node(nodegroup) {
     this.group = nodegroup;
@@ -142,13 +154,14 @@ function Nodepad(selector) {
         var line = this.s.line(srcnode.x, srcnode.y, dstnode.x, dstnode.y);
         line.attr({
             stroke: defaultEdgeColor,
-            strokeWidth: 5
+            strokeWidth: defaultEdgeStrokeWidth
         });
         this.sendToBack(line);
         var newedge = new Edge(line, srcnode, dstnode);
         srcnode.pushEdge(newedge, true);
         dstnode.pushEdge(newedge, false);
         this.edges.push(newedge);
+        this.hoverednode = null;
         return newedge;
     }
     this.startEdge = function() {
@@ -156,7 +169,7 @@ function Nodepad(selector) {
         var line = this.s.line(this.hoverednode.x, this.hoverednode.y, this.hoverednode.x, this.hoverednode.y);
         line.attr({
             stroke: defaultEdgeColor,
-            strokeWidth: 5
+            strokeWidth: defaultEdgeStrokeWidth
         });
         this.draggingline = line;
         this.sendToBack(line);
@@ -177,6 +190,7 @@ function Nodepad(selector) {
         this.draggingline = null;
         this.sourcenode = null;
         this.edgestretchloop = null;
+        this.hoverednode = null;
     }
     this.placeEdge = function(srcnode, dstnode) {
         if(srcnode == dstnode) {return;}
@@ -205,15 +219,16 @@ function Nodepad(selector) {
         nodecircle.attr({
             fill: fill || this.currentfill,
             stroke: nohighlight ? "#000" : defaultHighlightColor,
-            strokeWidth: 5
+            strokeWidth: defaultNodeStrokeWidth
         });
+        var nodemask = nodecircle.clone(); nodemask.attr({opacity: 0});
         var nodelabel = this.s.text(x - 5, y + 5, label || this.nodecount);
         nodelabel.attr({"font-size": "20px"});
-        var nodegroup = this.s.group(nodecircle, nodelabel);
+        var nodegroup = this.s.group(nodecircle, nodelabel, nodemask);
         
         /* node set stuff */
         var newnode = new Node(nodegroup);
-        newnode.label = this.nodecount;
+        newnode.label = label || this.nodecount;
         this.nodes.push(newnode);
         this.nodecount += 1;
         this.lasthoverednode = this.hoverednode;
