@@ -33,48 +33,50 @@ function nodepad_notif(msg) {
 
 function assert(condition, message) {
     if (!condition) {
-        throw message || "Assertion failed";
+        throw message || 'Assertion failed';
     }
 }
 var mouseX = 0,
     mouseY = 0;
 $(document).mousemove(function (e) {
-    "use strict";
+    'use strict';
     mouseX = e.pageX;
     mouseY = e.pageY;
 });
 
-var defaultHighlightColor = "orange";
-var defaultEdgeColor = "#000";
-var palette = {
-    49: "#bada55",
-    50: "#C14C44",
-    51: "#da55ba",
-    52: "#c89dbf",
-    53: "#dab855",
-    54: "#55bada"
-};
-var defaultCurrentColor = palette[49];
-var defaultNodeRadius = 36;
-var defaultEdgeStrokeWidth = 5;
-var defaultNodeStrokeWidth = 4;
+var defaultHighlightColor = 'orange',
+    defaultEdgeColor = '#000',
+    palette = {
+    49: '#bada55',
+    50: '#C14C44',
+    51: '#da55ba',
+    52: '#c89dbf',
+    53: '#dab855',
+    54: '#55bada'
+    },
+    defaultCurrentColor = palette[49],
+    defaultNodeRadius = 36,
+    defaultEdgeStrokeWidth = 5,
+    defaultNodeStrokeWidth = 4;
 
 function Node(nodegroup) {
     this.group = nodegroup;
-    this.label = nodegroup.select("text").text;
+    this.label = nodegroup.select('text').text;
     this.x = nodegroup.getBBox().cx;
     this.y = nodegroup.getBBox().cy;
     this.edges = Snap.set();
     this.outedges = Snap.set();
     this.inedges = Snap.set();
     this.fill = function(fill) {
-        this.group.select("circle").attr({fill: fill});
+        this.group.select('circle').attr({fill: fill});
     }
     this.setLabel = function(label) {
-        this.group.select("text").attr({text: label});
+        this.group.select('text').attr({text: label});
         this.label = label;
     }
     this.move = function(newx, newy, animation_time) {
+        
+        // FIXME: the whole function doesn't because Snap
         if(animation_time) {
             var thisnode = this;
             var setterX = function(n) {
@@ -97,7 +99,7 @@ function Node(nodegroup) {
             }
             var dx = newx - this.x;
             var dy = newy - this.y;
-            this.group.animate({transform:"t"+dx+","+dy}, animation_time);
+            this.group.animate({transform:'t'+dx+','+dy}, animation_time);
             Snap.animate(this.x, newx, setterX, animation_time);
             Snap.animate(this.y, newy, setterY, animation_time);
             this.x = newx;
@@ -105,14 +107,18 @@ function Node(nodegroup) {
         } else {
             var dx = newx - this.x;
             var dy = newy - this.y;
-            this.group.animate({transform:"t"+dx+","+dy}, 0);
-            this.x = newx;
-            this.y = newy;
+            //this.group.animate({transform: 't0,0'}, 0, mina.linear);
+            //this.group.animate({transform: 't'+dx+','+dy}, 100, mina.linear);
+            this.group.animate({transform:this.group.matrix.translate(dx,dy)});
+            //this.real_x = newx;
+            //this.real_y = newy;
             this.edges.forEach(function (edge) {
                 if (edge.src == this) {
-                    edge.line.attr({x1: this.x, y1: this.y});
+                    //edge.line.attr({x1: this.x, y1: this.y});
+                    edge.line.attr({x1: newx, y1: newy});
                 } else {
-                    edge.line.attr({x2: this.x, y2: this.y});
+                    //edge.line.attr({x2: this.x, y2: this.y});
+                    edge.line.attr({x2: newx, y2: newy});
                 }
             }, this);
         }
@@ -178,25 +184,25 @@ function Nodepad(selector) {
             var x2 = line.getBBox().x2;
             var y2 = line.getBBox().y2;
             line.attr({
-                "x2": x2 + (mouseX - x2),
-                "y2": y2 + (mouseY - y2)
+                'x2': x2 + (mouseX - x2),
+                'y2': y2 + (mouseY - y2)
             });
 
         }, 5);
     }
     this.cancelEdge = function() {
-        if (this.edgestretchloop) { clearInterval(this.edgestretchloop); }
-        if (this.draggingline) { this.draggingline.remove(); }
+        if (this.edgestretchloop) clearInterval(this.edgestretchloop);
+        if (this.draggingline) this.draggingline.remove();
         this.draggingline = null;
         this.sourcenode = null;
         this.edgestretchloop = null;
         this.hoverednode = null;
     }
     this.placeEdge = function(srcnode, dstnode) {
-        if(srcnode == dstnode) {return;}
+        if(srcnode == dstnode) return;
         this.draggingline.attr({
-            "x2": dstnode.x,
-            "y2": dstnode.y
+            'x2': dstnode.x,
+            'y2': dstnode.y
         });
         var newedge = new Edge(this.draggingline, srcnode, dstnode);
         srcnode.pushEdge(newedge, true);
@@ -218,12 +224,12 @@ function Nodepad(selector) {
         var nodecircle = this.s.circle(x, y, defaultNodeRadius);
         nodecircle.attr({
             fill: fill || this.currentfill,
-            stroke: nohighlight ? "#000" : defaultHighlightColor,
+            stroke: nohighlight ? '#000' : defaultHighlightColor,
             strokeWidth: defaultNodeStrokeWidth
         });
         var nodemask = nodecircle.clone(); nodemask.attr({opacity: 0});
         var nodelabel = this.s.text(x - 5, y + 5, label || this.nodecount);
-        nodelabel.attr({"font-size": "20px"});
+        nodelabel.attr({'font-size': '20px'});
         var nodegroup = this.s.group(nodecircle, nodelabel, nodemask);
         
         /* node set stuff */
@@ -237,22 +243,22 @@ function Nodepad(selector) {
         /* node-hovering behavior */
         nodegroup.hover(function () {
             if (!np.draggingnode) {
-                nodegroup.select("circle").attr({
+                nodegroup.select('circle').attr({
                     stroke: defaultHighlightColor
                 });
             }
         },
         function () {
             if (!np.draggingnode) {
-                nodegroup.select("circle").attr({
-                    stroke: "#000"
+                nodegroup.select('circle').attr({
+                    stroke: '#000'
                 });
             }
         });
         
         /* node-dragging behavior */
         nodegroup.drag();
-        nodegroup.drag(function(dx, dy, x, y, e){ // onmove
+        nodegroup.drag(function(dx, dy, x, y, e) { // onmove
             newnode.x = newnode.group.getBBox().cx;
             newnode.y = newnode.group.getBBox().cy;
             newnode.edges.forEach(function (edge) {
@@ -266,7 +272,7 @@ function Nodepad(selector) {
         function (x, y, e) { // onstart
             np.draggingnode = np.hoverednode || np.lasthoverednode;
             np.sendToFront(nodegroup);
-            nodegroup.select("circle").attr({stroke: defaultHighlightColor});
+            nodegroup.select('circle').attr({stroke: defaultHighlightColor});
         },
         function (e) { // onend 
             np.draggingnode = null;
@@ -274,12 +280,10 @@ function Nodepad(selector) {
         
         /* hovering behavior */
         nodegroup.mouseover(function () {
-            if(!np.draggingnode){
-                np.hoverednode = newnode;
-            }
+            if(!np.draggingnode) np.hoverednode = newnode;
         });
         nodegroup.mouseout(function () {
-            if(!np.draggingnode){
+            if(!np.draggingnode) {
                 np.lasthoverednode = np.hoverednode;
                 np.hoverednode = null;
             }
@@ -291,9 +295,7 @@ function Nodepad(selector) {
             this.removeEdge(edge);
         }, this);
         node.remove();
-        if (!keep_in_nodeset) {
-            this.nodes.exclude(node);
-        }
+        if (!keep_in_nodeset) this.nodes.exclude(node);
         this.hoverednode = null;
     }
     this.fillNode = function(fill, node) {
@@ -316,8 +318,8 @@ function Nodepad(selector) {
 }
 
 document.onkeydown = function (ev) {
-    "use strict";
-    assert(np, "Error: np var not found!");
+    'use strict';
+    assert(np, 'Error: np var not found!');
     var key = (ev || window.event).keyCode;
     if (key === 90) { // Z press
         if (!np.edgestretchloop && !np.hoverednode) {
@@ -338,7 +340,7 @@ document.onkeydown = function (ev) {
             np.fillNode(palette[key]);
         } else {
             np.setCurrentColor(palette[key]);
-            document.querySelector("#currentcolor").setAttribute("style", "background-color:" + palette[key]);
+            document.querySelector('#infobox').setAttribute('style', 'background-color:' + palette[key]);
         }
     } else if (key === 67) { // C press
         np.clear();

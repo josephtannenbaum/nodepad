@@ -1,5 +1,5 @@
 /*
-   algo_bfs.js
+   tool_treeify.js
    
    Copyright 2014 Joe Tannenbaum <joseph.i.tannenbaum@gmail.com>
    
@@ -21,70 +21,68 @@
    
 */
 
-function algo_bfs_childnodes(n) {
+function tool_treeify_childnodes(n) {
     var ret = [];
     n.edges.forEach(function(e) {
         var c = (e.dst != n) ? e.dst : e.src;
         if (c.algo_color == 'w') ret.push(c);
     }, this);
-    ret.reverse();
+    //ret.reverse();
     return ret;
 }
  
-function algo_bfs_animate(flat_nodes) {
-    flat_nodes.forEach(function(n) {
-        n.setLabel('?');
-        n.fill('#ffffff');
-    }, this);
-    var algo_bfs_n = 0,
-        algo_bfs_label = 1;
-    algo_bfs_interval = setInterval(function() {
-        if (!flat_nodes[algo_bfs_n]) {
-            clearInterval(algo_bfs_interval);
-            algo_bfs_interval = null;
+function tool_treeify_animate(flat_nodes) {
+    var max_level = flat_nodes.pop(),
+        tool_treeify_level = 0;
+    tool_treeify_interval = setInterval(function() {
+        if(tool_treeify_level > max_level) {
+            clearInterval(tool_treeify_interval);
+            tool_treeify_interval = null;
             return;
         }
-        var t = flat_nodes[algo_bfs_n];
-        if(t.algo_color == 'b') {
-            t.fill('#CCCCCC');
-            t.algo_color = 'd';
-        } else {
-            t.fill('#FF3300');
-            t.setLabel(algo_bfs_label);
-            algo_bfs_label += 1;
-        }
-        algo_bfs_n+=1;
-    }, 1200);
+        var x = 0;
+        flat_nodes.forEach(function(n) {
+            if(n.algo_color == tool_treeify_level) {
+                gridMoveNode(n, x+1, tool_treeify_level);
+                x+=1;
+            }
+        });
+        tool_treeify_level+=1; 
+    }, 100);
 }
 
-function algo_bfs(n) {
+function tool_treeify(n) {
     var flat_nodes = [],
-        queue=[];
-    n.algo_color = 'g'; // gray
+        max_level = 0,
+        queue=[],
+        level=1;
+    n.algo_color = 0; // gray
     queue.push(n);
     flat_nodes.push(n);
     while (queue.length) {
         var t = queue.shift();
-        flat_nodes.push(t);
-        t.algo_color = 'b';
-        algo_bfs_childnodes(t).forEach(function(u) {
+        tool_treeify_childnodes(t).forEach(function(u) {
             flat_nodes.push(u);
-            u.algo_color = 'g'; 
+            u.algo_color = t.algo_color+1; 
+            if(u.algo_color+1 > max_level) {
+                max_level = u.algo_color+1;
+            }
             queue.push(u);
         });
     }
+    flat_nodes.push(max_level);
     return flat_nodes;
 }
 
-function algo_bfs_setup() {
+function tool_treeify_setup() {
     np.nodes.forEach(function(n) {
        n.algo_color = 'w'; // white
        n.group.click(function() {
-           if(algo_armed !== bfs_panel) return;
+           if(tool_armed !== tool_treeify_panel) return;
            unclickAllNodes();
-           algo_bfs_animate(algo_bfs(n));
-           algo_armed.select('rect').attr({stroke: '#000'});
-           algo_armed=null; 
+           tool_treeify_animate(tool_treeify(n));
+           tool_armed.select('rect').attr({stroke: '#000'});   
+           tool_armed=null; 
        });
     }, np.nodes);
     

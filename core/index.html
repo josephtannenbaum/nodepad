@@ -1,85 +1,70 @@
-<!--
-   index.html
-   
-   Copyright 2014 Joe Tannenbaum <joseph.i.tannenbaum@gmail.com>
-   
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-   
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-   MA 02110-1301, USA.
-   
-   
--->
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
 <head>
-	<title>Nodepad</title>
-	<meta http-equiv="content-type" content="text/html;charset=UTF-8">
-	<meta property="og:title" content="Nodepad - a graph/tree sketchpad" />
+    <title>Nodepad</title>
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8">
+    <meta property="og:title" content="Nodepad - a graph/tree sketchpad" />
     <meta property="og:description" content="pretty much Joe Tannenbaum's first webapp" />
-    <meta property="og:image" content="http://tannenbau.me/nodepad/preview.png" />
+    <meta property="og:image" content="//tannenbau.me/nodepad/preview.png" />
     <link rel="stylesheet" type="text/css" href="jquery.jgrowl.min.css"> 
-	<style>
+    <style>
     * {
       -webkit-box-sizing: border-box;
          -moz-box-sizing: border-box;
               box-sizing: border-box;
     }
-    .clearfix {
-        overflow: auto;
+    
+    html, body {
+        height: 100%;
     }
-	#svg {
-		-moz-border-radius: 10px;
-		-webkit-border-radius: 10px;
-		border-radius: 10px;
-		border: solid 2px #ccc;
-		float: left;
+    
+    #svg {
+/*      -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+        border: solid 2px #ccc;
+*/
+        float: left;
+        font: 1em source-sans-pro, Source Sans Pro, Helvetica, sans-serif;
+        height: 100%;
         width: 100%;
-		font: 1em source-sans-pro, Source Sans Pro, Helvetica, sans-serif;
-	}
+    }
+    
     #sidebar {
+        margin-left: 78%;
         position:fixed;
         width: 20%;
-        margin-left: 78%;
     }
-	#infobox {
-        -moz-border-radius: 10px;
-		-webkit-border-radius: 10px;
-		border-radius: 10px;
-		border: solid 1px #000;
-        margin-top: 10px;
-        padding: 5px;
-        max-width: 350px;
-		background-color: #bada55;
-        color: #181919;
-        font: 14px "Source Sans", helvetica, arial, sans-serif;
-	}
-    #presets {
-		height: 650px;
-    }
-    div.jGrowl div.bad {
-        width:300px;
-        opacity: 1;
-        font-size: 12pt;
+    
+    #infobox {
         background-color: #bada55;
-        color: 	#ffffff;
+        border: solid 1px #000;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+        color: #181919;
+        font: 14px 'Source Sans', helvetica, arial, sans-serif;
+        margin-top: 10px;
+        max-width: 350px;
+        padding: 5px;
     }
-	</style>
+    
+    #presets {
+        height: 650px;
+    }
+    
+    div.jGrowl div.bad {
+        background-color: #bada55;
+        color:  #fff;
+        font-size: 12pt;
+        opacity: 1;
+        width:300px;
+    }
+    </style>
     <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-	<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
     <script src="jquery.jgrowl.min.js"></script>
     <script src="snap.svg-min.js"></script>   
 </head>
@@ -99,8 +84,9 @@
         <svg id="presets"></svg>
     </div>
     <svg id="svg"></svg>
+    
     <script src="nodepad.js"></script>
-    <script src="animations/animation_dfs.js"></script>
+    <script src="tools/tool_treeify.js"></script>
     <script src="algorithms/algo_flood.js"></script>
     <script src="algorithms/algo_bfs.js"></script>
     <script src="algorithms/algo_dfs.js"></script>
