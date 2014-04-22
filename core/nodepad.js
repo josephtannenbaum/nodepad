@@ -59,8 +59,9 @@ var defaultHighlightColor = 'orange',
     defaultEdgeStrokeWidth = 5,
     defaultNodeStrokeWidth = 4;
 
-function Node(nodegroup) {
+function Node(nodegroup, currentfill) {
     this.group = nodegroup;
+    this.currentfill = currentfill;
     this.label = nodegroup.select('text').text;
     this.x = nodegroup.getBBox().cx;
     this.y = nodegroup.getBBox().cy;
@@ -68,6 +69,7 @@ function Node(nodegroup) {
     this.outedges = Snap.set();
     this.inedges = Snap.set();
     this.fill = function(fill) {
+        this.currentfill = fill;
         this.group.select('circle').attr({fill: fill});
     }
     this.setLabel = function(label) {
@@ -233,7 +235,7 @@ function Nodepad(selector) {
         var nodegroup = this.s.group(nodecircle, nodelabel, nodemask);
         
         /* node set stuff */
-        var newnode = new Node(nodegroup);
+        var newnode = new Node(nodegroup, this.currentfill);
         newnode.label = label || this.nodecount;
         this.nodes.push(newnode);
         this.nodecount += 1;
@@ -317,9 +319,11 @@ function Nodepad(selector) {
     }
 }
 
+var nodepad_keylock = false;
 document.onkeydown = function (ev) {
     'use strict';
     assert(np, 'Error: np var not found!');
+    if (nodepad_keylock) return;
     var key = (ev || window.event).keyCode;
     if (key === 90) { // Z press
         if (!np.edgestretchloop && !np.hoverednode) {

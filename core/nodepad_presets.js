@@ -250,6 +250,13 @@ tool_treeify_panel.select('text').attr({text:'organize'});
 tool_treeify_panel.after(tool_panel);
 //syke! tool_treeify_panel.mouseup(tool_treeify_setup);
 
+var tool_tolatex_panel = tool_panel.clone();
+tool_tolatex_panel.select('text').attr({x: tool_square.getBBox().cx - 22 });
+tool_tolatex_panel.attr({display:'block'});
+tool_tolatex_panel.select('text').attr({text:'to LaTeX'});
+tool_tolatex_panel.after(tool_panel);
+tool_tolatex_panel.mouseup(tool_tolatex);
+
 var tools_presented = false,
     tool_menu_timeout = null;
 tool_panel.mouseover(function() {
@@ -257,11 +264,13 @@ tool_panel.mouseover(function() {
     if(tools_presented) return;
     tools_presented = true;
     tool_treeify_panel.animate({transform: 't0,70',},80);
+    tool_tolatex_panel.animate({transform: 't0,140',},90);
 });
 
 function tool_menu_doom() {
     tool_menu_timeout = window.setTimeout(function() {
         tool_treeify_panel.animate({transform: 't0,0',},80);
+        tool_tolatex_panel.animate({transform: 't0,0',},90);
         tools_presented = false;
         tool_menu_timeout = null;
     }, 4500);
@@ -290,3 +299,6 @@ tool_treeify_panel.mouseup(function() {
     nodepad_notif('Select a root node to organize around... (click panel again to cancel)');
     this.select('rect').attr({stroke: '#bada55'});
 }, tool_treeify_panel);
+
+tool_tolatex_panel.mouseout(tool_menu_doom);
+tool_tolatex_panel.mouseover(function() {window.clearTimeout(tool_menu_timeout);});

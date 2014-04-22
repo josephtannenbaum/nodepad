@@ -8,6 +8,7 @@
     <meta property="og:title" content="Nodepad - a graph/tree sketchpad" />
     <meta property="og:description" content="pretty much Joe Tannenbaum's first webapp" />
     <meta property="og:image" content="//tannenbau.me/nodepad/preview.png" />
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="jquery.jgrowl.min.css"> 
     <style>
     * {
@@ -63,8 +64,9 @@
         width:300px;
     }
     </style>
-    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
     <script src="jquery.jgrowl.min.js"></script>
     <script src="snap.svg-min.js"></script>   
 </head>
@@ -87,6 +89,7 @@
     
     <script src="nodepad.js"></script>
     <script src="tools/tool_treeify.js"></script>
+    <script src="tools/tool_tolatex.js"></script>
     <script src="algorithms/algo_flood.js"></script>
     <script src="algorithms/algo_bfs.js"></script>
     <script src="algorithms/algo_dfs.js"></script>
