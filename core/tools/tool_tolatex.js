@@ -67,7 +67,7 @@ function tool_tolatex_str() {
         var nodename = "n"+n.group.id;
         var nodex = n.x/128.0;
         var nodey = n.y/128.0;
-        var nodefill = n.currentfill.replace("#","");
+        var nodefill = n.currentfill.replace("#","").toUpperCase();
         nodelist.push(TOOL_TOLATEX_NODESTR.format(nodename, 
                                                   nodex,
                                                   10-nodey,
