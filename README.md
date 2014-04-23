@@ -4,6 +4,7 @@ Graph and tree sketchpad environment webapp written in Javascript
 ##### Libraries used
 - [Snap.svg](http://snapsvg.io/)<br />
 - [jGrowl](https://github.com/stanlemon/jGrowl)<br />
+- [canvg](http://canvg.googlecode.com)<br />
 
 ##### Objects
 - `Nodepad`: namespace for the sketchpad
@@ -13,10 +14,9 @@ Graph and tree sketchpad environment webapp written in Javascript
 ##### Side menu
 - <b>Presets</b>: clears the screen and draws a preset graph (binary tree etc)
 - <b>Algorithms</b>: runs a classic algorithm on an existing graph
-- <b>Tools</b>: Organizes or otherwise modifies nodes 
+- <b>Tools</b>: Export graph into different formats, organize nodes 
 
 ##### TODO
 - Implement directed edges
 - "Mathematical" visual theme (smaller nodes and thinner edges, more like LaTeX
-- "Export to LaTeX"???
 - Advanced settings page to expose some variables

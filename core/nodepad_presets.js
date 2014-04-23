@@ -121,7 +121,7 @@ nine_square_panel.mouseup(function() {
 function preset_menu_doom() {
     preset_menu_timeout = window.setTimeout(function() {
         binary_panel.animate({transform: 't0,0',},80);
-        nine_square_panel.animate({transform: 't0,0',},80);
+        nine_square_panel.animate({transform: 't0,0',},90);
         presets_presented = false;
         preset_menu_timeout = null;
     }, 4500);
@@ -250,12 +250,20 @@ tool_treeify_panel.select('text').attr({text:'organize'});
 tool_treeify_panel.after(tool_panel);
 //syke! tool_treeify_panel.mouseup(tool_treeify_setup);
 
+
 var tool_tolatex_panel = tool_panel.clone();
 tool_tolatex_panel.select('text').attr({x: tool_square.getBBox().cx - 22 });
 tool_tolatex_panel.attr({display:'block'});
 tool_tolatex_panel.select('text').attr({text:'to LaTeX'});
 tool_tolatex_panel.after(tool_panel);
 tool_tolatex_panel.mouseup(tool_tolatex);
+
+var tool_topng_panel = tool_panel.clone();
+tool_topng_panel.select('text').attr({x: tool_square.getBBox().cx - 20 });
+tool_topng_panel.attr({display:'block'});
+tool_topng_panel.select('text').attr({text:'to PNG'});
+tool_topng_panel.after(tool_panel);
+tool_topng_panel.mouseup(tool_topng);
 
 var tools_presented = false,
     tool_menu_timeout = null;
@@ -264,12 +272,14 @@ tool_panel.mouseover(function() {
     if(tools_presented) return;
     tools_presented = true;
     tool_treeify_panel.animate({transform: 't0,70',},80);
-    tool_tolatex_panel.animate({transform: 't0,140',},90);
+    tool_topng_panel.animate({transform: 't0,140',},90);
+    tool_tolatex_panel.animate({transform: 't0,210',},100);
 });
 
 function tool_menu_doom() {
     tool_menu_timeout = window.setTimeout(function() {
         tool_treeify_panel.animate({transform: 't0,0',},80);
+        tool_topng_panel.animate({transform: 't0,0',},90);
         tool_tolatex_panel.animate({transform: 't0,0',},90);
         tools_presented = false;
         tool_menu_timeout = null;
@@ -302,3 +312,6 @@ tool_treeify_panel.mouseup(function() {
 
 tool_tolatex_panel.mouseout(tool_menu_doom);
 tool_tolatex_panel.mouseover(function() {window.clearTimeout(tool_menu_timeout);});
+
+tool_topng_panel.mouseout(tool_menu_doom);
+tool_topng_panel.mouseover(function() {window.clearTimeout(tool_menu_timeout);});

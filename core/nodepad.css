@@ -1,0 +1,51 @@
+* {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+#svg {
+    float: left;
+    font: 1em source-sans-pro, Source Sans Pro, Helvetica, sans-serif;
+    height: 100%;
+    width: 100%;
+}
+
+#sidebar {
+    margin-left: 78%;
+    position:fixed;
+    width: 20%;
+}
+
+#infobox {
+    background-color: #bada55;
+    border: solid 1px #000;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    color: #181919;
+    font: 14px 'Source Sans', helvetica, arial, sans-serif;
+    margin-top: 10px;
+    max-width: 350px;
+    padding: 5px;
+}
+
+#presets {
+    height: 650px;
+}
+
+div.jGrowl div.bad {
+    font-size: 12pt !important;
+}
+
+.tool_topng_dialog {
+    background-color: #fff !important;
+}
+
+.tool_topng_dialog div.ui-dialog-content{
+    overflow: hidden !important;
+}

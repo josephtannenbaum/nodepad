@@ -8,66 +8,18 @@
     <meta property="og:title" content="Nodepad - a graph/tree sketchpad" />
     <meta property="og:description" content="pretty much Joe Tannenbaum's first webapp" />
     <meta property="og:image" content="//tannenbau.me/nodepad/preview.png" />
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
-    <link rel="stylesheet" type="text/css" href="jquery.jgrowl.min.css"> 
-    <style>
-    * {
-      -webkit-box-sizing: border-box;
-         -moz-box-sizing: border-box;
-              box-sizing: border-box;
-    }
+    <link rel="stylesheet" type="text/css" href="trontastic/jquery-ui-1.10.4.custom.min.css" />
+    <link rel="stylesheet" type="text/css" href="jquery.jgrowl.min.css" /> 
+    <link rel="stylesheet" type="text/css" href="nodepad.css" /> 
     
-    html, body {
-        height: 100%;
-    }
-    
-    #svg {
-/*      -moz-border-radius: 10px;
-        -webkit-border-radius: 10px;
-        border-radius: 10px;
-        border: solid 2px #ccc;
-*/
-        float: left;
-        font: 1em source-sans-pro, Source Sans Pro, Helvetica, sans-serif;
-        height: 100%;
-        width: 100%;
-    }
-    
-    #sidebar {
-        margin-left: 78%;
-        position:fixed;
-        width: 20%;
-    }
-    
-    #infobox {
-        background-color: #bada55;
-        border: solid 1px #000;
-        -moz-border-radius: 10px;
-        -webkit-border-radius: 10px;
-        border-radius: 10px;
-        color: #181919;
-        font: 14px 'Source Sans', helvetica, arial, sans-serif;
-        margin-top: 10px;
-        max-width: 350px;
-        padding: 5px;
-    }
-    
-    #presets {
-        height: 650px;
-    }
-    
-    div.jGrowl div.bad {
-        background-color: #bada55;
-        color:  #fff;
-        font-size: 12pt;
-        opacity: 1;
-        width:300px;
-    }
-    </style>
     <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
     <script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
     <script src="jquery.jgrowl.min.js"></script>
+    <script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/rgbcolor.js"></script> 
+    <script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/StackBlur.js"></script>
+    <script type="text/javascript" src="http://canvg.googlecode.com/svn/trunk/canvg.js"></script> 
+    
     <script src="snap.svg-min.js"></script>   
 </head>
 
@@ -90,6 +42,7 @@
     <script src="nodepad.js"></script>
     <script src="tools/tool_treeify.js"></script>
     <script src="tools/tool_tolatex.js"></script>
+    <script src="tools/tool_topng.js"></script>
     <script src="algorithms/algo_flood.js"></script>
     <script src="algorithms/algo_bfs.js"></script>
     <script src="algorithms/algo_dfs.js"></script>

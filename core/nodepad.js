@@ -28,13 +28,11 @@ function nodepad_notif(msg) {
         theme: 'bad',
         closer: false,
         life: 2000
-        });
+    });
 }
 
 function assert(condition, message) {
-    if (!condition) {
-        throw message || 'Assertion failed';
-    }
+    if (!condition) throw message || 'Assertion failed';
 }
 var mouseX = 0,
     mouseY = 0;

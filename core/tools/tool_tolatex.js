@@ -101,6 +101,7 @@ function tool_tolatex() {
     $( '#tool_tolatex' ).dialog({
       height: 400,
       width: 600,
+      resizable: false,
       modal: true,
       close: function() {
           nodepad_keylock = false;
