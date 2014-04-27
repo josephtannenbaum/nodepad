@@ -1,6 +1,8 @@
 nodepad
 =======
 Graph and tree sketchpad environment webapp written in Javascript
+- [Demo here](http://tannenbau.me/nodepad/)<br />
+
 ##### Libraries used
 - [Snap.svg](http://snapsvg.io/)<br />
 - [jGrowl](https://github.com/stanlemon/jGrowl)<br />
