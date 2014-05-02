@@ -110,11 +110,11 @@ pre_panel.mouseover(function() {
 });
 
 binary_panel.mouseup(function() {
-    this.select('rect').attr({stroke: '#bada55'});
+    this.select('rect').attr({stroke: np.currentfill || '#bada55'});
     this.select('rect').animate({stroke: '#000'}, 800);
 }, binary_panel);
 nine_square_panel.mouseup(function() {
-    this.select('rect').attr({stroke: '#bada55'});
+    this.select('rect').attr({stroke: np.currentfill || '#bada55'});
     this.select('rect').animate({stroke: '#000'}, 800);
 }, nine_square_panel);
 
@@ -202,7 +202,7 @@ flood_panel.mouseup(function() {
     }
     algo_armed = this;
     nodepad_notif('Click on a node to start flood algorithm... (click panel again to cancel)');
-    this.select('rect').attr({stroke: '#bada55'});
+    this.select('rect').attr({stroke: ((np.currentfill !== "#fff") && np.currentfill) || '#bada55'});
 }, flood_panel);
 bfs_panel.mouseup(function() {
         if(algo_armed) {
@@ -216,7 +216,7 @@ bfs_panel.mouseup(function() {
         }
         algo_armed = this;
         nodepad_notif('Click on a node to start BFS algorithm... (click panel again to cancel)');
-        this.select('rect').attr({stroke: '#bada55'});
+        this.select('rect').attr({stroke: ((np.currentfill !== "#fff") && np.currentfill) || '#bada55'});
 }, bfs_panel);
 dfs_panel.mouseup(function() {
     if(algo_armed) {
@@ -230,7 +230,7 @@ dfs_panel.mouseup(function() {
     }
     algo_armed = this;
     nodepad_notif('Click on a node to start DFS algorithm... (click panel again to cancel)');
-    this.select('rect').attr({stroke: '#bada55'});
+    this.select('rect').attr({stroke: ((np.currentfill !== "#fff") && np.currentfill) || '#bada55'});
 }, dfs_panel);
 
 /* tools */
@@ -307,7 +307,7 @@ tool_treeify_panel.mouseup(function() {
     tool_armed = this;
     tool_treeify_setup();
     nodepad_notif('Select a root node to organize around... (click panel again to cancel)');
-    this.select('rect').attr({stroke: '#bada55'});
+    this.select('rect').attr({stroke: np.currentfill || '#bada55'});
 }, tool_treeify_panel);
 
 tool_tolatex_panel.mouseout(tool_menu_doom);
