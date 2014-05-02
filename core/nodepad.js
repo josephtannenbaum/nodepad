@@ -208,9 +208,11 @@ function Nodepad(selector) {
                 'x2': x2 + (mouseX - x2),
                 'y2': y2 + (mouseY - y2)
             });
-            if (this_np.directed) {
-                if(this_np.draggingarrowgroup) this_np.draggingarrowgroup.remove();
-                this_np.draggingarrowgroup = _drawArrowGroup(this_np, this_np.sourcenode.x, this_np.sourcenode.y, mouseX, mouseY, true);
+            if (this_np.directed) { // TODO: make this redraw instead of destroy/remake
+                if(this_np.draggingarrowgroup)
+                    this_np.draggingarrowgroup = _drawArrowGroup(this_np, this_np.sourcenode.x, this_np.sourcenode.y, mouseX, mouseY, true, this_np.draggingarrowgroup);
+                else
+                    this_np.draggingarrowgroup = _drawArrowGroup(this_np, this_np.sourcenode.x, this_np.sourcenode.y, mouseX, mouseY, true);
             }
         }, 5);
     }
@@ -218,6 +220,7 @@ function Nodepad(selector) {
         if (this.edgestretchloop) clearInterval(this.edgestretchloop);
         if (this.draggingline) this.draggingline.remove();
         if (this.draggingarrowgroup) this.draggingarrowgroup.remove();
+        this.draggingarrowgroup = null;
         this.draggingline = null;
         this.sourcenode = null;
         this.edgestretchloop = null;
@@ -249,6 +252,7 @@ function Nodepad(selector) {
         this.sendToBack(this.draggingline);
         this.edgestretchloop = null;
         this.draggingline = null;
+        this.draggingarrowgroup = null;
         this.sourcenode = null;
         return newedge;
     }
@@ -307,8 +311,7 @@ function Nodepad(selector) {
                     edge.line.attr({x2: newnode.x, y2: newnode.y});
                 }
                 if (edge.arrowgroup) {
-                    edge.arrowgroup.remove();
-                    edge.arrowgroup = _drawArrowGroup(this_np, edge.src.x, edge.src.y, edge.dst.x, edge.dst.y);
+                    edge.arrowgroup = _drawArrowGroup(this_np, edge.src.x, edge.src.y, edge.dst.x, edge.dst.y, false, edge.arrowgroup);
                 }
             }, newnode.edges);
         },
@@ -456,7 +459,7 @@ function _debugArrow(np, x, y){
     });
 }
 
-function _drawArrowGroup(np, sx, sy, dx, dy, no_offset) {
+function _drawArrowGroup(np, sx, sy, dx, dy, no_offset, refresh_group) {
     var angle = (Math.atan2((sy - dy),(sx - dx)) * 180) / Math.PI;
     var nodeBoundaryDx = 0;
     var nodeBoundaryDy = 0;
@@ -470,17 +473,31 @@ function _drawArrowGroup(np, sx, sy, dx, dy, no_offset) {
     var leftArrowDx = leftArrowLength*Math.cos((180+leftArrowAngle) * Math.PI / 180);
     var leftArrowY = dy - leftArrowDy;
     var leftArrowX = dx - leftArrowDx;
-    var leftArrowLine = np.s.line(leftArrowX-nodeBoundaryDx, leftArrowY-nodeBoundaryDy, dx-nodeBoundaryDx, dy-nodeBoundaryDy);
-    leftArrowLine.attr({stroke: defaultEdgeColor, strokeWidth: defaultArrowStrokeWidth}); 
+
     var rightArrowAngle = (angle - 20);
     var rightArrowLength = defaultArrowLength;
     var rightArrowDy = rightArrowLength*Math.sin((180+rightArrowAngle) * Math.PI / 180);
     var rightArrowDx = rightArrowLength*Math.cos((180+rightArrowAngle) * Math.PI / 180);
     var rightArrowY = dy - rightArrowDy;
     var rightArrowX = dx - rightArrowDx;
-    var rightArrowLine = np.s.line(rightArrowX-nodeBoundaryDx, rightArrowY-nodeBoundaryDy, dx-nodeBoundaryDx, dy-nodeBoundaryDy);
-    rightArrowLine.attr({stroke: defaultEdgeColor, strokeWidth: defaultArrowStrokeWidth}); 
-    var arrowhead = np.s.group(rightArrowLine, leftArrowLine);
-    np.sendToBack(arrowhead);
-    return arrowhead;
+    
+    if (refresh_group) {
+        refresh_group[0].attr({'x1': leftArrowX-nodeBoundaryDx,
+                                'y1': leftArrowY-nodeBoundaryDy,
+                                'x2': dx-nodeBoundaryDx,
+                                'y2': dy-nodeBoundaryDy});
+        refresh_group[1].attr({'x1': rightArrowX-nodeBoundaryDx,
+                                'y1': rightArrowY-nodeBoundaryDy,
+                                'x2': dx-nodeBoundaryDx,
+                                'y2': dy-nodeBoundaryDy});
+        return refresh_group;
+    } else {
+        var leftArrowLine = np.s.line(leftArrowX-nodeBoundaryDx, leftArrowY-nodeBoundaryDy, dx-nodeBoundaryDx, dy-nodeBoundaryDy);
+        leftArrowLine.attr({stroke: defaultEdgeColor, strokeWidth: defaultArrowStrokeWidth}); 
+        var rightArrowLine = np.s.line(rightArrowX-nodeBoundaryDx, rightArrowY-nodeBoundaryDy, dx-nodeBoundaryDx, dy-nodeBoundaryDy);
+        rightArrowLine.attr({stroke: defaultEdgeColor, strokeWidth: defaultArrowStrokeWidth}); 
+        var arrowhead = np.s.group(rightArrowLine, leftArrowLine);
+        np.sendToBack(arrowhead);
+        return arrowhead;
+    }
 }
