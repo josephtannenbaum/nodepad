@@ -222,6 +222,11 @@ function Nodepad(selector) {
         this.sourcenode = null;
         this.edgestretchloop = null;
         this.hoverednode = null;
+        this.nodes.forEach(function(n) {
+           n.group.select('circle').attr({
+                stroke: '#000'
+            }); 
+        });
         
     }
     this.placeEdge = function(srcnode, dstnode) {
@@ -292,7 +297,7 @@ function Nodepad(selector) {
         /* node-dragging behavior */
         nodegroup.drag();
         nodegroup.drag(function(dx, dy, x, y, e) { // onmove
-            if (this_np.edgestretchloop && this_np.sourcenode === newnode) this_np.cancelEdge();
+            if (this_np.edgestretchloop && (this_np.sourcenode === newnode)) this_np.cancelEdge();
             newnode.x = newnode.group.getBBox().cx;
             newnode.y = newnode.group.getBBox().cy;
             newnode.edges.forEach(function (edge) {
@@ -424,7 +429,7 @@ document.onkeydown = function (ev) {
             np.directed=!np.directed;
             np.toggleDirected(np.directed);
             _sidebarToggleDirected(np.directed);
-            nodepad_notif("Directed graph mode turned " + (np.directed ? "on" : "off"));
+            nodepad_notif("Directed graph mode: " + (np.directed ? "on" : "off"));
         }
     }
 }
