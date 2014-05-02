@@ -53,7 +53,7 @@ function tool_topng() {
     var _myCanvas = document.getElementById("canvas");
     canvg(_myCanvas, np.s.toString());
     var img = _myCanvas.toDataURL("image/png");
-    $('<div id="tool_topng" title="Export as PNG">\
+    $('<div id="tool_topng" title="Export as PNG (press ESC to close)">\
     <p style="font-size: 11pt">Right-click -> Save As</p>\
     <img src="'+img+'"/>\
     </div>').insertAfter('body');

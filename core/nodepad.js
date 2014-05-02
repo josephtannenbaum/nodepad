@@ -292,6 +292,7 @@ function Nodepad(selector) {
         /* node-dragging behavior */
         nodegroup.drag();
         nodegroup.drag(function(dx, dy, x, y, e) { // onmove
+            if (this_np.edgestretchloop && this_np.sourcenode === newnode) this_np.cancelEdge();
             newnode.x = newnode.group.getBBox().cx;
             newnode.y = newnode.group.getBBox().cy;
             newnode.edges.forEach(function (edge) {
@@ -315,15 +316,21 @@ function Nodepad(selector) {
             np.draggingnode = null;
         });
         
-        /* hovering behavior */
+        /* mouseover/out behavior */
         nodegroup.mouseover(function () {
             if(!np.draggingnode) np.hoverednode = newnode;
+            nodegroup.select('circle').attr({
+                stroke: defaultHighlightColor
+            });
         });
         nodegroup.mouseout(function () {
             if(!np.draggingnode) {
                 np.lasthoverednode = np.hoverednode;
                 np.hoverednode = null;
             }
+            nodegroup.select('circle').attr({
+                stroke: '#000'
+            });
         });
         return newnode;
     }

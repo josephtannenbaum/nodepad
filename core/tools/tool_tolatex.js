@@ -98,7 +98,7 @@ function tool_tolatex() {
         return;
     }
     nodepad_keylock = true;
-    $('<div id="tool_tolatex" title="Export as LaTeX">\
+    $('<div id="tool_tolatex" title="Export as LaTeX (press ESC to close)">\
     <p style="font-size: 11pt">Be sure to add \\usepackage\{tikz\} to your header!</p>\
     <textarea rows=20 cols=82 style="font-size: 8pt">{0}</textarea>\
     </div>'.format(tool_tolatex_str())).insertAfter('body');
