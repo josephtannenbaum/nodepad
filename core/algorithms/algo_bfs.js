@@ -25,6 +25,7 @@ function algo_bfs_childnodes(n) {
     var ret = [];
     n.edges.forEach(function(e) {
         var c = (e.dst != n) ? e.dst : e.src;
+        if (np.directed && e.arrowgroup && e.src === c) return; // directed arrow behavior
         if (c.algo_color == 'w') ret.push(c);
     }, this);
     ret.reverse();
@@ -38,10 +39,12 @@ function algo_bfs_animate(flat_nodes) {
     }, this);
     var algo_bfs_n = 0,
         algo_bfs_label = 1;
+    algo_in_progress = true;    
     algo_bfs_interval = setInterval(function() {
         if (!flat_nodes[algo_bfs_n]) {
             clearInterval(algo_bfs_interval);
             algo_bfs_interval = null;
+            algo_in_progress = false;    
             return;
         }
         var t = flat_nodes[algo_bfs_n];

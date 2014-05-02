@@ -315,3 +315,5 @@ tool_tolatex_panel.mouseover(function() {window.clearTimeout(tool_menu_timeout);
 
 tool_topng_panel.mouseout(tool_menu_doom);
 tool_topng_panel.mouseover(function() {window.clearTimeout(tool_menu_timeout);});
+
+

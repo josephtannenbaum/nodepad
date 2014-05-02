@@ -32,8 +32,9 @@
             <p>HOVER+Z: Start edge, Z again to place edge</p>
             <p>Hit X to cancel your edge</p>
             <P>C: Clear nodepad</P>
-            <p>Hit 1-6 to cycle through colors</p>
-            <p>HOVER + [1-6] to change a node's</p>
+            <p>D: Directed edges <span id="directedon">on</span>/<span id="directedoff" style="font-weight:bold">off</span></p>
+            <p>1-7: to cycle through colors</p>
+            <p>HOVER + [1-7] to change a node's color</p>
         </div>
         <svg id="presets"></svg>
     </div>
@@ -49,6 +50,8 @@
     <script src="nodepad_presets.js"></script>
     <script>
         var np = new Nodepad("#svg");
+        //np.directed=true;
+        //toggleDirected(true);
     </script>
 </body>
 

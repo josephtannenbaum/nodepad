@@ -38,17 +38,16 @@ if (!String.prototype.format) {
 
 var TOOL_TOLATEX_NODESTR = "  \\node ({0}) at ({1},{2}) [fill=npf{3}] \{{4}\};";
 var TOOL_TOLATEX_COLORSTR = "\\definecolor\{npf{0}\}\{HTML\}\{{1}\}";
-var TOOL_TOLATEX_GRAPHSTR = "\\begin{tikzpicture}\n\
-  [auto=left,every node/.style=\{circle, draw\}]\n\
-  {0}\n\
-\n\
-  \\foreach \\from/\\to in \{{1}\}\n\
-    \\draw (\\from) -- (\\to);\n\
-\n\
-\\end{tikzpicture}\n"
+var TOOL_TOLATEX_DRAWEDGESTR="\\draw ({0}) -{1} ({2});\n"
+var TOOL_TOLATEX_ARROWFORMATSTR="->,>=stealth',";
+var TOOL_TOLATEX_GRAPHSTR = "\\usetikzlibrary\{arrows\}\n\
+\\begin{tikzpicture}\n\
+  [line width=1.5pt,{0}auto=left,every node/.style=\{circle, draw,minimum width=30pt\}]\n\
+  {1}\n\
+  {2}\
+\\end{tikzpicture}"
 
 function tool_tolatex_str() {
-    
     // create necessary color definitions
     var fills = [];
     np.nodes.forEach(function(n){
@@ -65,8 +64,8 @@ function tool_tolatex_str() {
     var nodelist = [];
     np.nodes.forEach(function(n){
         var nodename = "n"+n.group.id;
-        var nodex = n.x/128.0;
-        var nodey = n.y/128.0;
+        var nodex = n.x/64.0;
+        var nodey = n.y/64.0;
         var nodefill = n.currentfill.replace("#","").toUpperCase();
         nodelist.push(TOOL_TOLATEX_NODESTR.format(nodename, 
                                                   nodex,
@@ -78,12 +77,17 @@ function tool_tolatex_str() {
     // build list of edges
     var nodelistStr = nodelist.join("\n");
     var edgelist = [];
+    var directedlistBool = [];
     np.edges.forEach(function(e) {        
-        edgelist.push("n"+e.src.group.id+"/n"+e.dst.group.id);
+        //"n"+e.src.group.id+"/n"+e.dst.group.id);
+        edgelist.push(TOOL_TOLATEX_DRAWEDGESTR.format("n"+e.src.group.id, 
+                                                          np.directed && e.arrowgroup ? ">" : "-",
+                                                      "n"+e.dst.group.id));
     });
-    var edgelistStr = edgelist.join(",");
+    var edgelistStr = edgelist.join("");
     
-    var graphstr = TOOL_TOLATEX_GRAPHSTR.format(nodelistStr,
+    var graphstr = TOOL_TOLATEX_GRAPHSTR.format(np.directed ? TOOL_TOLATEX_ARROWFORMATSTR : "",
+                                                nodelistStr,
                                                 edgelistStr);
     return fillDefineStr +"\n"+ graphstr;
 }

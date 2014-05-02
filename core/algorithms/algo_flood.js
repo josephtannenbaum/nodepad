@@ -25,6 +25,7 @@ function algo_flood_childnodes(n) {
     var ret = [];
     n.edges.forEach(function(e) {
         var c = (e.dst != n) ? e.dst : e.src;
+        if (np.directed && e.arrowgroup && e.src === c) return; // directed arrow behavior
         if (c.algo_color == 'w') {
             ret.push(c);
         }
@@ -40,10 +41,12 @@ function algo_flood_animate(flat_nodes) {
         n.setLabel('?');
         n.fill('#ffffff');
     }, this);
+    algo_in_progress = true;
     algo_flood_interval = setInterval(function() {
         if(algo_flood_level > max_level) {
             clearInterval(algo_flood_interval);
             algo_flood_interval = null;
+            algo_in_progress = false;
             return;
         }
         flat_nodes.forEach(function(n) {
@@ -79,14 +82,16 @@ function algo_flood(n) {
 
 function algo_flood_setup() {
     np.nodes.forEach(function(n) {
-       n.algo_color = 'w'; // white
-       n.group.click(function() {
+        n.algo_color = 'w'; // white
+        n.setLabel('?');
+        n.fill('#ffffff');
+        n.group.click(function() {
            if(algo_armed !== flood_panel) return;
            unclickAllNodes();
            algo_flood_animate(algo_flood(n));
            algo_armed.select('rect').attr({stroke: '#000'});   
            algo_armed=null; 
-       });
+    });
     }, np.nodes);
     
 }

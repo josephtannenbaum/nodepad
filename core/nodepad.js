@@ -42,6 +42,11 @@ $(document).mousemove(function (e) {
     mouseY = e.pageY;
 });
 
+function _sidebarToggleDirected(directed) {
+    $(directed ? "span#directedon" : "span#directedoff").css({"font-weight": "bold"});
+    $(directed ? "span#directedoff" : "span#directedon").css({"font-weight": "none"});
+}
+
 var defaultHighlightColor = 'orange',
     defaultEdgeColor = '#000',
     palette = {
@@ -50,12 +55,16 @@ var defaultHighlightColor = 'orange',
     51: '#da55ba',
     52: '#c89dbf',
     53: '#dab855',
-    54: '#55bada'
+    54: '#55bada',
+    55: '#fff'
     },
     defaultCurrentColor = palette[49],
     defaultNodeRadius = 36,
     defaultEdgeStrokeWidth = 5,
     defaultNodeStrokeWidth = 4;
+    defaultArrowLength = 30,
+    defaultArrowStrokeWidth = 4;
+var algo_in_progress = false;
 
 function Node(nodegroup, currentfill) {
     this.group = nodegroup;
@@ -131,20 +140,28 @@ function Node(nodegroup, currentfill) {
         (am_src ? this.outedges : this.inedges).push(edge);
     }
 }
-function Edge(line, srcnode, dstnode) {
+function Edge(line, srcnode, dstnode, arrowgroup) {
     this.line = line;
     this.src = srcnode;
     this.dst = dstnode;
+    this.arrowgroup=arrowgroup;
     this.remove = function() {
         this.line.remove();
+        if(this.arrowgroup) {
+            this.arrowgroup.remove();
+            this.arrowgroup=null;
+        }
     }
 }
 function Nodepad(selector) {
     this.s = Snap(selector);
     this.nodes = Snap.set();
     this.edges = Snap.set();
+    this.fullgroup = null;
     this.currentfill = defaultCurrentColor;
     this.nodecount = 1;
+    this.directed=false;
+    this.draggingarrowgroup = null;
     
     this.sendToBack = function(shape) {
         this.nodes.forEach(function (node) {
@@ -163,7 +180,10 @@ function Nodepad(selector) {
             strokeWidth: defaultEdgeStrokeWidth
         });
         this.sendToBack(line);
-        var newedge = new Edge(line, srcnode, dstnode);
+        var arrowgroup=null;
+        if (this.directed) // set up arrowhead
+            arrowgroup = _drawArrowGroup(this, srcnode.x, srcnode.y, dstnode.x, dstnode.y);
+        var newedge = new Edge(line, srcnode, dstnode, arrowgroup);
         srcnode.pushEdge(newedge, true);
         dstnode.pushEdge(newedge, false);
         this.edges.push(newedge);
@@ -180,6 +200,7 @@ function Nodepad(selector) {
         this.draggingline = line;
         this.sendToBack(line);
         this.sendToFront(this.sourcenode.group);
+        var this_np = this;
         this.edgestretchloop = setInterval(function () {
             var x2 = line.getBBox().x2;
             var y2 = line.getBBox().y2;
@@ -187,16 +208,21 @@ function Nodepad(selector) {
                 'x2': x2 + (mouseX - x2),
                 'y2': y2 + (mouseY - y2)
             });
-
+            if (this_np.directed) {
+                if(this_np.draggingarrowgroup) this_np.draggingarrowgroup.remove();
+                this_np.draggingarrowgroup = _drawArrowGroup(this_np, this_np.sourcenode.x, this_np.sourcenode.y, mouseX, mouseY, true);
+            }
         }, 5);
     }
     this.cancelEdge = function() {
         if (this.edgestretchloop) clearInterval(this.edgestretchloop);
         if (this.draggingline) this.draggingline.remove();
+        if (this.draggingarrowgroup) this.draggingarrowgroup.remove();
         this.draggingline = null;
         this.sourcenode = null;
         this.edgestretchloop = null;
         this.hoverednode = null;
+        
     }
     this.placeEdge = function(srcnode, dstnode) {
         if(srcnode == dstnode) return;
@@ -204,7 +230,13 @@ function Nodepad(selector) {
             'x2': dstnode.x,
             'y2': dstnode.y
         });
-        var newedge = new Edge(this.draggingline, srcnode, dstnode);
+        // place arrowgroup appropriately
+        var arrowhead = null;
+        if(this.draggingarrowgroup) {
+            this.draggingarrowgroup.remove();
+            arrowhead = _drawArrowGroup(this, srcnode.x, srcnode.y, dstnode.x, dstnode.y);
+        }
+        var newedge = new Edge(this.draggingline, srcnode, dstnode, arrowhead);
         srcnode.pushEdge(newedge, true);
         dstnode.pushEdge(newedge, false);
         this.edges.push(newedge);
@@ -256,16 +288,21 @@ function Nodepad(selector) {
             }
         });
         
+        var this_np = this;
         /* node-dragging behavior */
         nodegroup.drag();
         nodegroup.drag(function(dx, dy, x, y, e) { // onmove
             newnode.x = newnode.group.getBBox().cx;
             newnode.y = newnode.group.getBBox().cy;
             newnode.edges.forEach(function (edge) {
-                if (edge.src == newnode) {
+                if (edge.src == newnode) { // we're moving the source node
                     edge.line.attr({x1: newnode.x, y1: newnode.y});
-                } else {
+                } else { // we're moving the dst node
                     edge.line.attr({x2: newnode.x, y2: newnode.y});
+                }
+                if (edge.arrowgroup) {
+                    edge.arrowgroup.remove();
+                    edge.arrowgroup = _drawArrowGroup(this_np, edge.src.x, edge.src.y, edge.dst.x, edge.dst.y);
                 }
             }, newnode.edges);
         },
@@ -313,7 +350,18 @@ function Nodepad(selector) {
         }, this);
         this.nodes.clear();
         this.edges.clear();
+        
+        this.directed=false;
+        _sidebarToggleDirected(false);
+        np.toggleDirected(false);
         this.nodecount = 1;
+    }
+    this.toggleDirected = function(directed) {
+        if (!directed) this.draggingarrowgroup = null;
+        this.edges.forEach(function(e) {
+           if (e.arrowgroup)
+            e.arrowgroup.attr({"display": (directed ? "block" : "none")});
+        });
     }
 }
 
@@ -337,14 +385,90 @@ document.onkeydown = function (ev) {
         } else if (np.hoverednode) {
             np.removeNode(np.hoverednode);
         }
-    } else if (49 <= key && key <= 54) { // 1-6 press
+    } else if (49 <= key && key <= 55) { // 1-7 press
         if (np.hoverednode) {
             np.fillNode(palette[key]);
         } else {
             np.setCurrentColor(palette[key]);
             document.querySelector('#infobox').setAttribute('style', 'background-color:' + palette[key]);
         }
+    } else if (false && key === 16) { // Shift press
+        if(np.fullgroup) return;
+        var allgroups = [];
+        np.edges.forEach(function(e) {
+            if(e.line) allgroups.push(e.line);
+        });
+        np.nodes.forEach(function(n) {
+            if(n.group) allgroups.push(n.group);
+            n.group._dragtmp = n.group._drag;
+            n.group._drag = function(){};
+        });
+        if(!allgroups.length) return;
+        np.fullgroup = np.s.group.apply(np.s, allgroups);
+        np.fullgroup.drag();
     } else if (key === 67) { // C press
         np.clear();
+    } else if (key === 68) { // D press
+        if (np.draggingline) { // we don't want to switch modes mid-draw
+            nodepad_notif("Can't switch DG modes while drawing an edge");
+        } else if (algo_armed) {
+            nodepad_notif("Can't switch DG modes while there's an algorithm in progress");
+        } else {
+            np.directed=!np.directed;
+            np.toggleDirected(np.directed);
+            _sidebarToggleDirected(np.directed);
+            nodepad_notif("Directed graph mode turned " + (np.directed ? "on" : "off"));
+        }
     }
+}
+
+document.onkeyup = function (ev) {
+    'use strict';
+    assert(np, 'Error: np var not found!');
+    if (nodepad_keylock) return;
+    var key = (ev || window.event).keyCode;
+    if (false && key === 16 && np.fullgroup) { // Shift up
+        np.fullgroup.undrag();
+        np.fullgroup = null;
+        np.nodes.forEach(function(n) {
+            n.group._drag = n.group._dragtmp;
+        });
+    }
+}
+
+function _debugArrow(np, x, y){
+    var l = np.s.line(0, 0, x, y);
+    l.attr({
+        stroke: defaultEdgeColor,
+        strokeWidth: defaultEdgeStrokeWidth
+    });
+}
+
+function _drawArrowGroup(np, sx, sy, dx, dy, no_offset) {
+    var angle = (Math.atan2((sy - dy),(sx - dx)) * 180) / Math.PI;
+    var nodeBoundaryDx = 0;
+    var nodeBoundaryDy = 0;
+    if(!no_offset) {
+        nodeBoundaryDx = defaultNodeRadius*Math.sin((270-angle) * Math.PI / 180);
+        nodeBoundaryDy = defaultNodeRadius*Math.cos((270-angle) * Math.PI / 180);
+    }
+    var leftArrowAngle = (angle + 20);
+    var leftArrowLength = defaultArrowLength;
+    var leftArrowDy = leftArrowLength*Math.sin((180+leftArrowAngle) * Math.PI / 180);
+    var leftArrowDx = leftArrowLength*Math.cos((180+leftArrowAngle) * Math.PI / 180);
+    var leftArrowY = dy - leftArrowDy;
+    var leftArrowX = dx - leftArrowDx;
+    var leftArrowLine = np.s.line(leftArrowX-nodeBoundaryDx, leftArrowY-nodeBoundaryDy, dx-nodeBoundaryDx, dy-nodeBoundaryDy);
+    leftArrowLine.attr({stroke: defaultEdgeColor, strokeWidth: defaultArrowStrokeWidth}); 
+    var rightArrowAngle = (angle - 20);
+    var rightArrowLength = defaultArrowLength;
+    var rightArrowDy = rightArrowLength*Math.sin((180+rightArrowAngle) * Math.PI / 180);
+    var rightArrowDx = rightArrowLength*Math.cos((180+rightArrowAngle) * Math.PI / 180);
+    var rightArrowY = dy - rightArrowDy;
+    var rightArrowX = dx - rightArrowDx;
+    var rightArrowLine = np.s.line(rightArrowX-nodeBoundaryDx, rightArrowY-nodeBoundaryDy, dx-nodeBoundaryDx, dy-nodeBoundaryDy);
+    rightArrowLine.attr({stroke: defaultEdgeColor, strokeWidth: defaultArrowStrokeWidth}); 
+    var arrowhead = np.s.group(rightArrowLine, leftArrowLine);
+    np.sendToBack(arrowhead);
+    return arrowhead;
 }
